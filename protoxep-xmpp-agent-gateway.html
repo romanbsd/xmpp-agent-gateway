@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>XEP-xxxx: XMPP Agent Gateway</title><style type="text/css">
+/* don't mind this hack */
+nav#toc h2:before {
+display: none;
+content: "XEP-xxxx";
+}
+        </style><link rel="stylesheet" type="text/css" href="xmpp.css"><link href="prettify.css" type="text/css" rel="stylesheet"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"><script type="text/javascript" src="prettify.js"></script><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="title" content="XEP-xxxx: XMPP Agent Gateway"><meta name="description" content="This specification defines an XMPP protocol extension for hosting, discovering, searching, and invoking addressable AI agents and tools based on and bridgeable to the Model Context Protocol Tool data model."><meta name="DC.Title" content="XMPP Agent Gateway"><meta name="DC.Creator" content="Roman Shterenzon"><meta name="DC.Description" content="This specification defines an XMPP protocol extension for hosting, discovering, searching, and invoking addressable AI agents and tools based on and bridgeable to the Model Context Protocol Tool data model."><meta name="DC.Publisher" content="XMPP Standards Foundation"><meta name="DC.Contributor" content="XMPP Extensions Editor"><meta name="DC.Date" content="2026-07-28"><meta name="DC.Type" content="XMPP Extension Protocol"><meta name="DC.Format" content="XHTML"><meta name="DC.Identifier" content="XEP-xxxx"><meta name="DC.Language" content="en"><meta name="DC.Rights" content="This XMPP Extension Protocol is copyright © 1999 – 2024 by the XMPP Standards Foundation (XSF)."><meta property="og:type" content="website"><meta property="og:url" content="https://xmpp.org/extensions/xep-xxxx.html"><meta property="og:title" content="XEP-xxxx: XMPP Agent Gateway"><meta property="og:description" content="This specification defines an XMPP protocol extension for hosting, discovering, searching, and invoking addressable AI agents and tools based on and bridgeable to the Model Context Protocol Tool data model."><meta property="og:image" content="https://xmpp.org/images/logos/xmpp-logo-text-banner.jpg"><meta property="og:image:alt" content="XMPP (Extensible Messaging and Presence Protocol) Logo"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary"><meta name="twitter:url" content="https://xmpp.org/extensions/xep-xxxx.html"><meta name="twitter:title" content="XEP-xxxx: XMPP Agent Gateway"><meta name="twitter:description" content="This specification defines an XMPP protocol extension for hosting, discovering, searching, and invoking addressable AI agents and tools based on and bridgeable to the Model Context Protocol Tool data model."><meta name="twitter:image" content="https://xmpp.org/images/logos/xmpp-logo-text-banner.jpg"></head><body onload="prettyPrint()"><h1>XEP-xxxx: XMPP Agent Gateway</h1><div class="docmeta-wrap"><dl id="docmeta" class="compact"><dt>Abstract</dt><dd>This specification defines an XMPP protocol extension for hosting, discovering, searching, and invoking addressable AI agents and tools based on and bridgeable to the Model Context Protocol Tool data model.</dd><dt>Author</dt><dd>Roman Shterenzon</dd><dt>Copyright</dt><dd>© 2026 – 2026 XMPP Standards Foundation. <a href="#appendix-legal">SEE LEGAL NOTICES</a>.</dd><dt>Status</dt><dd><p>ProtoXEP</p><div id="status-notice" class="protoxep standards track">WARNING: This document has not yet been accepted for consideration or approved in any official manner by the XMPP Standards Foundation, and this document is not yet an XMPP Extension Protocol (XEP). If this document is accepted as a XEP by the XMPP Council, it will be published at &lt;<a href="https://xmpp.org/extensions/">https://xmpp.org/extensions/</a>&gt; and announced on the &lt;standards@xmpp.org&gt; mailing list.</div></dd><dt>Type</dt><dd>Standards Track</dd><dt>Version</dt><dd>0.0.3 (2026-07-28)</dd></dl><div class="timeline-wrap"><div class="timeline-head">Document Lifecycle</div><ol class="timeline"><li>Experimental</li><li>Proposed</li><li>Stable</li><li>Final</li></ol></div></div><nav id="toc"><a href="#top"><h2>Table of Contents</h2></a><ol class="toc"><li><a href="#intro">Introduction</a></li><li><a href="#reqs">Requirements</a></li><li><a href="#use-cases">Use Cases</a></li><li><a href="#glossary">Glossary</a></li><li><a href="#design">Design Considerations</a></li><li><a href="#namespaces">Protocol Namespaces and Identifiers</a></li><li><a href="#architecture">Architecture and Hosting</a><ol><li><a href="#addressing">Addressing Model</a></li><li><a href="#component-deployment">Component Deployment</a></li><li><a href="#conformance">Conformance Profiles</a></li></ol></li><li><a href="#discovery">Service Discovery</a><ol><li><a href="#find-gateway">Finding a Gateway</a></li><li><a href="#gateway-info">Gateway Information</a></li><li><a href="#list-agents">Listing Agent Endpoints</a></li><li><a href="#endpoint-info">Endpoint Information</a></li><li><a href="#list-tools">Listing Tools</a></li><li><a href="#tool-info">Tool Information</a></li><li><a href="#schemas">Retrieving Tool Schemas</a></li><li><a href="#identity-presence">Identity and Presence</a></li></ol></li><li><a href="#search">Agent Directory Search</a></li><li><a href="#registration">Endpoint Registration</a><ol><li><a href="#manifest">Manifest Model</a></li><li><a href="#registration-flow">Registration Flow</a></li><li><a href="#manifest-retrieval">Manifest Retrieval</a></li></ol></li><li><a href="#json-encoding">JSON Payload Encoding</a></li><li><a href="#event-json-schemas">Lifecycle JSON Schemas</a></li><li><a href="#execution">Tool Execution</a><ol><li><a href="#invocation">Invocation</a></li><li><a href="#federated-example">Federated Invocation Example</a></li><li><a href="#events">Lifecycle Events</a></li><li><a href="#interactive-input">Interactive Input</a></li><li><a href="#cancellation">Cancellation and Deadlines</a></li><li><a href="#task-states">Task States</a></li><li><a href="#task-recovery">Task Recovery</a></li><li><a href="#task-message-routing">Message Routing, Storage, and Copies</a></li><li><a href="#idempotency">Idempotency and Delegation</a></li></ol></li><li><a href="#messaging">Human Messaging Profile</a></li><li><a href="#errors">Error Handling</a></li><li><a href="#rules">Business Rules</a></li><li><a href="#impl">Implementation Appendix</a><ol><li><a href="#model-boundary">Gateway and Model Boundary</a></li><li><a href="#mcp-mapping">MCP Mapping</a></li><li><a href="#caching">Caching and Change Notification</a></li><li><a href="#canonical-json">Canonical JSON</a></li><li><a href="#implementation-status">Implementation Status and Known Differences</a></li></ol></li><li><a href="#future">Future Extensions</a></li><li><a href="#access">Accessibility Considerations</a></li><li><a href="#i18n">Internationalization Considerations</a></li><li><a href="#security">Security Considerations</a></li><li><a href="#privacy">Privacy Considerations</a></li><li><a href="#iana">IANA Considerations</a></li><li><a href="#registrar">XMPP Registrar Considerations</a><ol><li><a href="#registrar-namespaces">Protocol Namespaces</a></li><li><a href="#registrar-identities">Service Discovery Identities</a></li><li><a href="#registrar-features">Service Discovery Features</a></li><li><a href="#registrar-formtypes">Data Form Types</a></li><li><a href="#registrar-nodes">Service Discovery Nodes</a></li><li><a href="#registrar-failure-codes">Task Failure Codes</a></li></ol></li><li><a href="#schema">XML Schema</a><ol><li><a href="#schema-agent-api">Agent API Schema</a></li><li><a href="#schema-agent-task">Agent Task Schema</a></li></ol></li><li><a href="#acks">Acknowledgements</a></li></ol><h6><a href="#appendices">Appendices</a></h6><ol class="toc-appendices"><li><a href="#appendix-docinfo">Document Information</a></li><li><a href="#appendix-authorinfo">Author Information</a></li><li><a href="#appendix-legal">Legal Notices</a></li><li><a href="#appendix-xmpp">Relation to XMPP</a></li><li><a href="#appendix-discuss">Discussion Venue</a></li><li><a href="#appendix-conformance">Requirements Conformance</a></li><li><a href="#appendix-notes">Notes</a></li><li><a href="#appendix-revs">Revision History</a></li><li><a href="#appendix-biblatex">Bib(La)Tex Entry</a></li></ol></nav><h2 id="intro">1.
+       Introduction<a class="anchor-link" href="#intro"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">XMPP provides addressable identities, federation, routing, presence, and discovery that local processes, HTTP services, and MCP servers do not provide by themselves. This specification applies those properties to agent endpoints while denying federated visibility and invocation by default.</p>
+  <p class="" style="">An endpoint has a bare JID, immutable versioned manifests, and tools based on and bridgeable to the MCP Tool data model. Clients use XMPP discovery, optional directory search, separately retrieved JSON Schemas, and a durable asynchronous task protocol.</p>
+  <p class="" style="">The protocol is not an MCP JSON-RPC tunnel. Discovery, administration, durable tasks, MCP bridging, and human messaging are separate conformance profiles within this one document. A bridge preserves MCP objects where lossless and reports semantic loss otherwise.</p>
+  <p class="" style="">This work grew out of real-world multi-agent orchestration. Openfire was used during development and integration testing.</p>
+<h2 id="reqs">2.
+       Requirements<a class="anchor-link" href="#reqs"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">The protocol defined herein is designed to:</p>
+  <ul class="" style="">
+    <li class="" style="">give every hosted agent a stable, routable bare JID;</li>
+    <li class="" style="">allow a domain to host many virtual agents behind one internal or external component;</li>
+    <li class="" style="">enable standards-based discovery without requiring a proprietary registry;</li>
+    <li class="" style="">support both browse-oriented directory listing and user-oriented search;</li>
+    <li class="" style="">publish tool metadata based on and bridgeable to the MCP Tool data model without placing large JSON Schemas in every discovery response;</li>
+    <li class="" style="">support asynchronous, long-running, cancellable, and interactive tool executions;</li>
+    <li class="" style="">bind registration, discovery, and invocation to authenticated XMPP identities and deployment authorization policy;</li>
+    <li class="" style="">keep XMPP addressing, routing, tenant identity, and task correlation authoritative at the gateway boundary rather than delegating them to an LLM or tool runtime;</li>
+    <li class="" style="">provide deterministic correlation, version selection, schema validation, duplicate suppression, and terminal task semantics;</li>
+    <li class="" style="">keep optional human messaging separate from task execution and delivery state; and</li>
+    <li class="" style="">allow future extension to additional MCP capabilities without redefining the base protocol.</li>
+  </ul>
+<h2 id="use-cases">3.
+       Use Cases<a class="anchor-link" href="#use-cases"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <ol start="" class="" style="">
+    <li class="" style="">A user discovers a local gateway, pages through only the endpoints visible to that user, and inspects one endpoint.</li>
+    <li class="" style="">A legacy-capable client searches the same visibility-scoped directory and pages results with RSM.</li>
+    <li class="" style="">A caller retrieves an immutable manifest, records its version and hash, lists tools pinned to that version, and invokes one tool.</li>
+    <li class="" style="">A caller loses lifecycle messages, reconnects on another resource, queries complete task state, and retrieves the retained terminal result.</li>
+    <li class="" style="">A tool pauses for structured input; the caller recovers the pending request from task state and answers it exactly once.</li>
+    <li class="" style="">A caller requests cancellation while the target is running; the target atomically commits cancellation or a competing terminal result.</li>
+    <li class="" style="">A caller loses the admission IQ result and safely retries the same request ID and payload without duplicate execution.</li>
+    <li class="" style="">A federated requester is denied visibility and receives behavior indistinguishable from a nonexistent endpoint or task.</li>
+    <li class="" style="">An authenticated account self-registers its own immutable manifest, or an administrator provisions and activates a virtual endpoint version.</li>
+    <li class="" style="">An MCP bridge exposes an XMPP endpoint while preserving MCP Tool and CallToolResult objects and reporting any semantic loss.</li>
+  </ol>
+<h2 id="glossary">4.
+       Glossary<a class="anchor-link" href="#glossary"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <div class="indent"><dl>
+    
+      <dt><strong>Agent</strong></dt>
+      <dd>An automated XMPP entity that can receive messages and expose one or more tools.</dd>
+    
+    
+      <dt><strong>Agent Gateway</strong></dt>
+      <dd>An XMPP service that hosts, routes for, registers, and advertises agent endpoints.</dd>
+    
+    
+      <dt><strong>Agent Endpoint</strong></dt>
+      <dd>The bare JID and versioned API manifest representing one hosted agent.</dd>
+    
+    
+      <dt><strong>Manifest</strong></dt>
+      <dd>A JSON document describing an agent, its capabilities, and its tools.</dd>
+    
+    
+      <dt><strong>Tool</strong></dt>
+      <dd>A callable capability compatible with the MCP Tool data model and addressable by name within an endpoint version.</dd>
+    
+    
+      <dt><strong>Task</strong></dt>
+      <dd>One durable execution of a tool, identified by a task ID and represented by a lifecycle state. A task is distinct from an ordinary XMPP conversation even when its result contains natural-language text.</dd>
+    
+    
+      <dt><strong>Caller</strong></dt>
+      <dd>The authenticated XMPP entity that starts a task.</dd>
+    
+    
+      <dt><strong>Target</strong></dt>
+      <dd>The agent endpoint responsible for executing a task.</dd>
+    
+    
+      <dt><strong>Tenant</strong></dt>
+      <dd>A deployment-defined authorization partition. Tenant identifiers are not globally meaningful and MUST NOT be trusted when supplied by an untrusted peer.</dd>
+    
+  </dl></div>
+<h2 id="design">5.
+       Design Considerations<a class="anchor-link" href="#design"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">Discovery uses <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0030.html">Service Discovery (XEP-0030)</a></span>  [<a href="#nt-id63">1</a>], <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0059.html">Result Set Management (XEP-0059)</a></span>  [<a href="#nt-id64">2</a>], and <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0128.html">Service Discovery Extensions (XEP-0128)</a></span>  [<a href="#nt-id65">3</a>] so generic XMPP clients and caches can identify gateways, endpoints, and tools without a proprietary directory API. A compatibility profile additionally uses <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0055.html">Jabber Search (XEP-0055)</a></span>  [<a href="#nt-id66">4</a>] because deployed clients already provide user-facing search forms for it.</p>
+  <p class="" style="">Caller-to-target operations use IQ because each command requires a definite protocol response. The IQ result acknowledges durable admission only; execution remains asynchronous. Target-to-caller progress and state-change notifications use messages because accepted work can outlive an IQ exchange. Complete IQ state and result queries make notification loss recoverable. <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0184.html">Message Delivery Receipts  (XEP-0184)</a></span>  [<a href="#nt-id67">5</a>] remains unsuitable as an execution acknowledgement because it says nothing about semantic acceptance.</p>
+  <p class="" style="">Endpoint identity is the XMPP bare JID itself. No additional URI scheme is defined because routing, comparison, discovery, and authorization already operate on that identifier.</p>
+  <p class="" style=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0335.html">JSON Containers (XEP-0335)</a></span>  [<a href="#nt-id68">6</a>] defines a generic JSON container but is Deferred and not recommended for production use. This specification therefore uses dedicated, self-describing JSON-bearing elements whose semantics and schemas are defined here.</p>
+<h2 id="namespaces">6.
+       Protocol Namespaces and Identifiers<a class="anchor-link" href="#namespaces"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <figure class="table"><figcaption id="table-1"><strong>Table 1:</strong> Namespaces defined by this specification<a class="anchor-link" href="#table-1"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+    <tr class="body"><th colspan="" rowspan="">Purpose</th><th colspan="" rowspan="">Namespace or FORM_TYPE</th></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Agent directory feature and node</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-directory:0</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Agent API XML</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-api:0</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Manifest retrieval feature</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-api:0#manifest</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Schema retrieval feature</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-api:0#schema</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Self-registration feature</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-api:0#self-register</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Administrative provisioning feature</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-api:0#admin</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Tool collection node</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-tools:0#VERSION</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Tool feature and node prefix</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-tool:0</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Agent endpoint feature</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-endpoint:0</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Endpoint information FORM_TYPE</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-endpoint-info:0</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Tool information FORM_TYPE</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-tool-info:0</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Task core</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-task:0</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Task progress</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-task:0#progress</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Task cancellation</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-task:0#cancel</code></td></tr>
+    <tr class="body"><td align="" colspan="" rowspan="">Task interactive input</td><td align="" colspan="" rowspan=""><code>urn:xmpp:agent-task:0#input</code></td></tr>
+  </table></figure>
+  <p class="" style="">An endpoint identifier is its normalized bare JID. A resourcepart MUST NOT be present. Implementations MUST compare endpoint identifiers according to the XMPP address comparison rules and MUST NOT compare display strings or URI wrappers.</p>
+  <p class="" style="">Endpoint API versions MUST match <code>[A-Za-z0-9._~-]{1,64}</code>, are case-sensitive opaque strings, and are compared exactly. Empty values and whitespace are forbidden. A tool name is the exact MCP name: it MUST be a nonempty JSON string, MUST contain only characters legal in XML 1.0 when carried on the wire, and is compared code point by code point without Unicode normalization. Implementations SHOULD follow MCP's recommended length and ASCII character set, but this protocol imposes no smaller character repertoire or maximum beyond the advertised manifest and stanza-size limits.</p>
+  <p class="" style="">A tool collection node is formed by appending <code>#</code> and the exact API version to <code>urn:xmpp:agent-tools:0</code>. A tool node is formed by appending <code>#</code>, the exact API version, another <code>#</code>, and the unpadded base64url encoding from RFC 4648 Section 5 of the exact UTF-8 tool name to <code>urn:xmpp:agent-tool:0</code>. For example, <code>forecast.get</code> in version <code>1.4.0</code> has node <code>urn:xmpp:agent-tool:0#1.4.0#Zm9yZWNhc3QuZ2V0</code>. Decoders MUST reject padding, noncanonical encodings, invalid UTF-8, empty decoded names, and decoded names that violate the preceding limits.</p>
+<h2 id="architecture">7.
+       Architecture and Hosting<a class="anchor-link" href="#architecture"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <div class="indent"><h3 id="addressing">7.1 Addressing Model<a class="anchor-link" href="#addressing"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The gateway MUST have a domain JID, such as <code>agents.example</code>. Every hosted endpoint MUST have a bare JID, such as <code>weather@agents.example</code>. A gateway MAY host endpoints below its own component domain or another domain delegated to it by the XMPP server.</p>
+    <p class="" style="">Agent endpoint JIDs are ordinary XMPP addresses from the perspective of remote entities. A server MUST route stanzas addressed to hosted endpoint JIDs to the responsible gateway. The endpoint need not correspond to a C2S account and need not maintain an independent XML stream.</p>
+  </div>
+  <div class="indent"><h3 id="component-deployment">7.2 Component Deployment<a class="anchor-link" href="#component-deployment"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">A gateway MAY be implemented as an internal server module, an <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0114.html">Jabber Component Protocol (XEP-0114)</a></span>  [<a href="#nt-id69">7</a>] component, or another trusted service integration. The on-wire agent protocol is independent of that choice. An external component deployment MUST provision:</p>
+    <ul class="" style="">
+      <li class="" style="">the component domain or delegated agent domain;</li>
+      <li class="" style="">an authenticated component connection;</li>
+      <li class="" style="">routing for the virtual endpoint JIDs;</li>
+      <li class="" style="">an authorization policy for registration, directory visibility, and invocation;</li>
+      <li class="" style="">persistent manifest and task state if tasks must survive restart; and</li>
+      <li class="" style="">bounded reconnect, keepalive, IQ correlation, and task timeout behavior.</li>
+    </ul>
+    <p class="" style="">Remote component connections MUST use confidentiality and server authentication appropriate to the deployment. A plaintext component secret sent across an untrusted network is not acceptable. Operators SHOULD place the component on a local or mutually authenticated encrypted transport and SHOULD rotate component credentials.</p>
+    <p class="" style="">The gateway SHOULD send <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0199.html">XMPP Ping (XEP-0199)</a></span>  [<a href="#nt-id70">8</a>] pings after a period of stream inactivity and SHOULD reconnect with capped exponential backoff and jitter. Outstanding IQ requests MUST fail or time out when the component stream is lost; they MUST NOT remain pending indefinitely.</p>
+  </div>
+  <div class="indent"><h3 id="conformance">7.3 Conformance Profiles<a class="anchor-link" href="#conformance"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">This specification remains one document, but an implementation can claim one or more independently testable profiles:</p>
+    <figure class="table"><figcaption id="table-2"><strong>Table 2:</strong> Conformance profiles<a class="anchor-link" href="#table-2"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">Profile</th><th colspan="" rowspan="">Required behavior</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Core Directory</td><td align="" colspan="" rowspan="">Gateway discovery, RSM-paged agent listing, and endpoint information.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Jabber Search Compatibility</td><td align="" colspan="" rowspan="">Core Directory plus <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0055.html">Jabber Search (XEP-0055)</a></span>  [<a href="#nt-id66">4</a>] and <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0059.html">Result Set Management (XEP-0059)</a></span>  [<a href="#nt-id64">2</a>] search.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Tool Discovery</td><td align="" colspan="" rowspan="">Core Directory plus version-pinned tool items, tool information, manifest retrieval, and schema retrieval.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Task Execution</td><td align="" colspan="" rowspan="">Tool Discovery plus IQ invocation, durable acceptance, notifications, and complete state and result recovery.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Interactive Tasks</td><td align="" colspan="" rowspan="">Task Execution plus the independently advertised progress, cancellation, and input features.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Self Registration</td><td align="" colspan="" rowspan="">Authenticated C2S endpoint registration of immutable versions for the sender's own bare JID.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Administrative Provisioning</td><td align="" colspan="" rowspan="">Trusted registration, activation, deactivation, inspection, and removal operations.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Human Messaging</td><td align="" colspan="" rowspan="">The optional application profile in <a href="#messaging">Human Messaging Profile</a>; it is not required by any discovery or task profile.</td></tr>
+    </table></figure>
+    <p class="" style="">A gateway MUST NOT advertise a feature it does not implement for the addressed entity. Service-discovery feature vars are authoritative. Endpoint-wide and tool-specific support are both required: effective support is true only when the endpoint advertises the feature and the selected tool declares support in its pinned manifest.</p>
+  </div>
+<h2 id="discovery">8.
+       Service Discovery<a class="anchor-link" href="#discovery"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <div class="indent"><h3 id="find-gateway">8.1 Finding a Gateway<a class="anchor-link" href="#find-gateway"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">A client SHOULD query its server using <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0030.html">Service Discovery (XEP-0030)</a></span>  [<a href="#nt-id63">1</a>] items. A server that exposes an agent gateway SHOULD include the gateway JID as an item. A client MUST then query the candidate JID with <code>disco#info</code> and MUST verify the <code>urn:xmpp:agent-directory:0</code> feature rather than inferring support from a subdomain name.</p>
+    <figure class="code-example" id="example-1"><figcaption><strong>Example 1.</strong> Client discovers services on its server<a class="anchor-link" href="#example-1"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='juliet@example.net/phone'
+    to='example.net'
+    id='services-1'
+    type='get'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#items'/&gt;
+&lt;/iq&gt;
+
+&lt;iq from='example.net'
+    to='juliet@example.net/phone'
+    id='services-1'
+    type='result'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#items'&gt;
+    &lt;item jid='agents.example' name='Example Agent Gateway'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="gateway-info">8.2 Gateway Information<a class="anchor-link" href="#gateway-info"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The gateway MUST advertise an identity with category <code>automation</code> and type <code>agent-gateway</code>. It MUST advertise the protocol features it implements. This specification does not use <code>directory/user</code>, which denotes a directory of end users rather than agent endpoints.</p>
+    <figure class="code-example" id="example-2"><figcaption><strong>Example 2.</strong> Gateway service discovery information<a class="anchor-link" href="#example-2"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='juliet@example.net/phone'
+    to='agents.example'
+    id='gateway-info-1'
+    type='get'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#info'/&gt;
+&lt;/iq&gt;
+
+&lt;iq from='agents.example'
+    to='juliet@example.net/phone'
+    id='gateway-info-1'
+    type='result'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#info'&gt;
+    &lt;identity category='automation'
+              type='agent-gateway'
+              name='Example Agent Gateway'/&gt;
+    &lt;feature var='http://jabber.org/protocol/disco#info'/&gt;
+    &lt;feature var='http://jabber.org/protocol/disco#items'/&gt;
+    &lt;feature var='jabber:iq:search'/&gt;
+    &lt;feature var='jabber:x:data'/&gt;
+    &lt;feature var='urn:xmpp:agent-directory:0'/&gt;
+    &lt;feature var='urn:xmpp:agent-api:0#admin'/&gt;
+    &lt;feature var='urn:xmpp:ping'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="list-agents">8.3 Listing Agent Endpoints<a class="anchor-link" href="#list-agents"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">A client lists addressable agents by sending a <code>disco#items</code> query to the gateway. The query MAY omit <code>node</code> or set it to <code>urn:xmpp:agent-directory:0</code>. Each returned item MUST contain the endpoint bare JID and SHOULD contain its human-readable name. Because each item is itself an addressable entity, the item MUST NOT set <code>node</code>.</p>
+    <p class="" style="">The directory node MUST answer <code>disco#info</code> with identity <code>automation/agent-directory</code> and features <code>http://jabber.org/protocol/disco#info</code> and <code>http://jabber.org/protocol/disco#items</code>.</p>
+    <p class="" style="">Directory listing MUST support <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0059.html">Result Set Management (XEP-0059)</a></span>  [<a href="#nt-id64">2</a>]. Results MUST be ordered by normalized endpoint bare JID using octetwise ascending order, and that bare JID is the stable RSM item ID. The gateway MAY enforce a page maximum smaller than requested. RSM <code>count</code> MUST count only endpoints visible to the requester.</p>
+    <figure class="code-example" id="example-3"><figcaption><strong>Example 3.</strong> Client lists agents<a class="anchor-link" href="#example-3"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='juliet@example.net/phone'
+    to='agents.example'
+    id='agents-1'
+    type='get'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#items'
+         node='urn:xmpp:agent-directory:0'&gt;
+    &lt;set xmlns='http://jabber.org/protocol/rsm'&gt;
+      &lt;max&gt;50&lt;/max&gt;
+    &lt;/set&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+&lt;iq from='agents.example'
+    to='juliet@example.net/phone'
+    id='agents-1'
+    type='result'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#items'
+         node='urn:xmpp:agent-directory:0'&gt;
+    &lt;item jid='weather@agents.example' name='Weather Agent'/&gt;
+    &lt;item jid='calendar@agents.example' name='Calendar Agent'/&gt;
+    &lt;set xmlns='http://jabber.org/protocol/rsm'&gt;
+      &lt;first&gt;calendar@agents.example&lt;/first&gt;
+      &lt;last&gt;weather@agents.example&lt;/last&gt;
+      &lt;count&gt;2&lt;/count&gt;
+    &lt;/set&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+</pre></figure>
+    <p class="" style="">The gateway MUST apply its visibility policy before returning items. An empty result is not evidence that no agents exist; it can mean that no endpoints are visible to the requester.</p>
+  </div>
+  <div class="indent"><h3 id="endpoint-info">8.4 Endpoint Information<a class="anchor-link" href="#endpoint-info"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">A client obtains endpoint metadata by sending a node-less <code>disco#info</code> query to the endpoint bare JID. The endpoint MUST advertise identity <code>automation/agent-endpoint</code>, <code>http://jabber.org/protocol/disco#info</code>, <code>http://jabber.org/protocol/disco#items</code>, the task and API features it implements, and an <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0128.html">Service Discovery Extensions (XEP-0128)</a></span>  [<a href="#nt-id65">3</a>] result form with <code>FORM_TYPE</code> <code>urn:xmpp:agent-endpoint-info:0</code>. <code>urn:xmpp:agent-endpoint:0</code> is a service-discovery feature var only. It is not a disco node; an endpoint MUST return <code>item-not-found</code> if it is used as one.</p>
+    <figure class="table"><figcaption id="table-3"><strong>Table 3:</strong> Endpoint information fields<a class="anchor-link" href="#table-3"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">Field</th><th colspan="" rowspan="">Requirement</th><th colspan="" rowspan="">Description</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>server_name</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Stable implementation-oriented name.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>server_title</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Human-readable display name.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>description</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Human-readable endpoint description.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>version</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Selected manifest/API version.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>manifest_hash_algo</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] algorithm token for the canonical manifest hash; this version requires <code>sha-256</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>manifest_hash_value</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Base64-encoded <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] hash value without an algorithm prefix.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>cold_start_supported</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0004.html">Data Forms (XEP-0004)</a></span>  [<a href="#nt-id72">10</a>] boolean indicating whether invocation can wake an endpoint whose runtime is not currently active. Responders MUST emit <code>1</code> or <code>0</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>request_replay_seconds</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Positive integer minimum admission replay window, measured from first receipt of a request ID.</td></tr>
+    </table></figure>
+    <figure class="code-example" id="example-4"><figcaption><strong>Example 4.</strong> Endpoint service discovery information<a class="anchor-link" href="#example-4"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='weather@agents.example'
+    to='juliet@example.net/phone'
+    id='endpoint-info-1'
+    type='result'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#info'&gt;
+    &lt;identity category='automation'
+              type='agent-endpoint'
+              name='Weather Agent'/&gt;
+    &lt;feature var='http://jabber.org/protocol/disco#info'/&gt;
+    &lt;feature var='http://jabber.org/protocol/disco#items'/&gt;
+    &lt;feature var='urn:xmpp:agent-endpoint:0'/&gt;
+    &lt;feature var='urn:xmpp:agent-api:0#manifest'/&gt;
+    &lt;feature var='urn:xmpp:agent-api:0#schema'/&gt;
+    &lt;feature var='urn:xmpp:agent-task:0'/&gt;
+    &lt;feature var='urn:xmpp:agent-task:0#progress'/&gt;
+    &lt;feature var='urn:xmpp:agent-task:0#cancel'/&gt;
+    &lt;x xmlns='jabber:x:data' type='result'&gt;
+      &lt;field var='FORM_TYPE' type='hidden'&gt;
+        &lt;value&gt;urn:xmpp:agent-endpoint-info:0&lt;/value&gt;
+      &lt;/field&gt;
+      &lt;field var='server_name'&gt;&lt;value&gt;weather&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='server_title'&gt;&lt;value&gt;Weather Agent&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='description'&gt;&lt;value&gt;Provides weather forecasts.&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='version'&gt;&lt;value&gt;1.4.0&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='manifest_hash_algo'&gt;&lt;value&gt;sha-256&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='manifest_hash_value'&gt;&lt;value&gt;K2/YdwvIBAlfUIeZHiNCyiYA4m4W2wrEOqXQDoQyXp4=&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='cold_start_supported'&gt;&lt;value&gt;1&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='request_replay_seconds'&gt;&lt;value&gt;86400&lt;/value&gt;&lt;/field&gt;
+    &lt;/x&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="list-tools">8.5 Listing Tools<a class="anchor-link" href="#list-tools"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">A client lists an endpoint's tools by sending a <code>disco#items</code> query to the endpoint JID using the version-pinned collection node <code>urn:xmpp:agent-tools:0#VERSION</code>. Each item MUST use the endpoint JID, MUST identify the same version and tool with a tool node, and SHOULD include a human-readable name. Tool listing MUST support <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0059.html">Result Set Management (XEP-0059)</a></span>  [<a href="#nt-id64">2</a>], ordered by the exact UTF-8 tool-name bytes in octetwise ascending order; the complete encoded tool node is the stable RSM item ID. Counts include only tools visible to the requester.</p>
+    <p class="" style="">The collection node MUST answer <code>disco#info</code> with identity <code>automation/agent-tool-collection</code> and features <code>http://jabber.org/protocol/disco#info</code> and <code>http://jabber.org/protocol/disco#items</code>. Its version is fixed by the node identifier.</p>
+    <figure class="code-example" id="example-5"><figcaption><strong>Example 5.</strong> Client lists endpoint tools<a class="anchor-link" href="#example-5"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='juliet@example.net/phone'
+    to='weather@agents.example'
+    id='tools-1'
+    type='get'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#items'
+         node='urn:xmpp:agent-tools:0#1.4.0'&gt;
+    &lt;set xmlns='http://jabber.org/protocol/rsm'&gt;&lt;max&gt;50&lt;/max&gt;&lt;/set&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='juliet@example.net/phone'
+    id='tools-1'
+    type='result'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#items'
+         node='urn:xmpp:agent-tools:0#1.4.0'&gt;
+    &lt;item jid='weather@agents.example'
+          node='urn:xmpp:agent-tool:0#1.4.0#Zm9yZWNhc3QuZ2V0'
+          name='Get Forecast'/&gt;
+    &lt;set xmlns='http://jabber.org/protocol/rsm'&gt;
+      &lt;first&gt;urn:xmpp:agent-tool:0#1.4.0#Zm9yZWNhc3QuZ2V0&lt;/first&gt;
+      &lt;last&gt;urn:xmpp:agent-tool:0#1.4.0#Zm9yZWNhc3QuZ2V0&lt;/last&gt;
+      &lt;count&gt;1&lt;/count&gt;
+    &lt;/set&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="tool-info">8.6 Tool Information<a class="anchor-link" href="#tool-info"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">A client obtains tool metadata by querying its version-pinned tool node with <code>disco#info</code>. The response MUST advertise identity <code>automation/agent-tool</code>, features <code>http://jabber.org/protocol/disco#info</code> and <code>urn:xmpp:agent-tool:0</code>, the tool-specific task features it supports, and an <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0128.html">Service Discovery Extensions (XEP-0128)</a></span>  [<a href="#nt-id65">3</a>] result form with <code>FORM_TYPE</code> <code>urn:xmpp:agent-tool-info:0</code>.</p>
+    <figure class="table"><figcaption id="table-4"><strong>Table 4:</strong> Tool information fields<a class="anchor-link" href="#table-4"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">Field</th><th colspan="" rowspan="">Requirement</th><th colspan="" rowspan="">Description</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>name</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Stable tool name, unique within the endpoint version.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>title</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Human-readable title. A client displays <code>name</code> when this field is absent.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>description</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Human-readable tool behavior.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>api_version</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Manifest/API version to which the tool belongs.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>input_schema_hash_algo</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] algorithm token for the canonical input schema hash.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>input_schema_hash_value</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Base64-encoded <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] input schema hash.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>output_schema_hash_algo</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] algorithm token for the canonical output schema hash.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>output_schema_hash_value</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Base64-encoded <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] output schema hash.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>read_only</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">MCP <code>readOnlyHint</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>destructive</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">MCP <code>destructiveHint</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>idempotent</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">MCP <code>idempotentHint</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>open_world</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">MCP <code>openWorldHint</code>.</td></tr>
+    </table></figure>
+    <p class="" style="">Each hash algorithm/value field pair MUST appear together. The value is the Base64 content that would appear in an <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] <code>hash</code> element; it does not contain an algorithm prefix.</p>
+    <p class="" style="">Annotations are optional untrusted hints and MUST NOT be used as authorization decisions. In particular, <code>read_only=true</code> does not prove that execution has no side effects. An absent field means unknown; a bridge MUST preserve absence and MUST NOT manufacture a value while claiming a lossless mapping.</p>
+    <figure class="code-example" id="example-6"><figcaption><strong>Example 6.</strong> Client retrieves tool information<a class="anchor-link" href="#example-6"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='juliet@example.net/phone'
+    to='weather@agents.example'
+    id='tool-info-1'
+    type='get'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#info'
+         node='urn:xmpp:agent-tool:0#1.4.0#Zm9yZWNhc3QuZ2V0'/&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='juliet@example.net/phone'
+    id='tool-info-1'
+    type='result'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#info'
+         node='urn:xmpp:agent-tool:0#1.4.0#Zm9yZWNhc3QuZ2V0'&gt;
+    &lt;identity category='automation' type='agent-tool' name='Get Forecast'/&gt;
+    &lt;feature var='http://jabber.org/protocol/disco#info'/&gt;
+    &lt;feature var='urn:xmpp:agent-tool:0'/&gt;
+    &lt;feature var='urn:xmpp:agent-task:0#progress'/&gt;
+    &lt;feature var='urn:xmpp:agent-task:0#cancel'/&gt;
+    &lt;x xmlns='jabber:x:data' type='result'&gt;
+      &lt;field var='FORM_TYPE' type='hidden'&gt;
+        &lt;value&gt;urn:xmpp:agent-tool-info:0&lt;/value&gt;
+      &lt;/field&gt;
+      &lt;field var='name'&gt;&lt;value&gt;forecast.get&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='description'&gt;&lt;value&gt;Gets a forecast for one city.&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='api_version'&gt;&lt;value&gt;1.4.0&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='input_schema_hash_algo'&gt;&lt;value&gt;sha-256&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='input_schema_hash_value'&gt;&lt;value&gt;XxGP62PwgOW9NLxx8ysunvuijMhSd0y4j1SSRTAbt7c=&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='read_only'&gt;&lt;value&gt;1&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='destructive'&gt;&lt;value&gt;0&lt;/value&gt;&lt;/field&gt;
+      &lt;field var='idempotent'&gt;&lt;value&gt;1&lt;/value&gt;&lt;/field&gt;
+    &lt;/x&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="schemas">8.7 Retrieving Tool Schemas<a class="anchor-link" href="#schemas"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">To avoid placing large JSON Schemas in discovery responses, a client retrieves each schema with an IQ <code>get</code> containing <code>schema-request</code>. The <code>tool</code>, <code>version</code>, and <code>direction</code> attributes are REQUIRED. The request MUST include the expected manifest hash. The response contains <code>schema</code> with the exact version and media type plus <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] hash children for the manifest and schema. After XML character extraction, its <code>json</code> content MUST be the exact RFC 8785 canonical UTF-8 bytes represented by the schema hash. A target MUST return <code>conflict</code> when the supplied manifest hash does not select the immutable registered object.</p>
+    <figure class="code-example" id="example-7"><figcaption><strong>Example 7.</strong> Client retrieves a tool input schema<a class="anchor-link" href="#example-7"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='juliet@example.net/phone'
+    to='weather@agents.example'
+    id='schema-1'
+    type='get'&gt;
+  &lt;schema-request xmlns='urn:xmpp:agent-api:0'
+                  tool='forecast.get'
+                  version='1.4.0'
+                  direction='input'&gt;
+    &lt;hash xmlns='urn:xmpp:hashes:2' algo='sha-256'&gt;K2/YdwvIBAlfUIeZHiNCyiYA4m4W2wrEOqXQDoQyXp4=&lt;/hash&gt;
+  &lt;/schema-request&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='juliet@example.net/phone'
+    id='schema-1'
+    type='result'&gt;
+  &lt;schema xmlns='urn:xmpp:agent-api:0'
+          tool='forecast.get'
+          version='1.4.0'
+          direction='input'
+          media-type='application/schema+json'&gt;
+    &lt;manifest-hash&gt;
+      &lt;hash xmlns='urn:xmpp:hashes:2' algo='sha-256'&gt;K2/YdwvIBAlfUIeZHiNCyiYA4m4W2wrEOqXQDoQyXp4=&lt;/hash&gt;
+    &lt;/manifest-hash&gt;
+    &lt;schema-hash&gt;
+      &lt;hash xmlns='urn:xmpp:hashes:2' algo='sha-256'&gt;XxGP62PwgOW9NLxx8ysunvuijMhSd0y4j1SSRTAbt7c=&lt;/hash&gt;
+    &lt;/schema-hash&gt;
+    &lt;json&gt;{"additionalProperties":false,"properties":{"city":{"type":"string"}},"required":["city"],"type":"object"}&lt;/json&gt;
+  &lt;/schema&gt;
+&lt;/iq&gt;
+</pre></figure>
+    <p class="" style="">Tool schemas MUST be valid JSON Schema objects. Version 0 uses these rules:</p>
+    <ul class="" style="">
+      <li class="" style="">The recognized dialect is JSON Schema 2020-12; omission of <code>$schema</code> selects it.</li>
+      <li class="" style="">Core, Applicator, Validation, Meta-Data, Format-Annotation, Content, and Unevaluated vocabularies are required. <code>format</code> is annotation-only unless an extension explicitly requires supported assertion behavior.</li>
+      <li class="" style="">An input schema MUST have an object root.</li>
+      <li class="" style=""><code>$id</code> establishes the normal base URI, but automatic network retrieval is forbidden.</li>
+      <li class="" style="">Same-document <code>$ref</code>, <code>$anchor</code>, <code>$dynamicRef</code>, and <code>$dynamicAnchor</code> MUST be supported. External references require an explicit allowlist and resource budget.</li>
+      <li class="" style="">A vocabulary declared <code>true</code> in <code>$vocabulary</code> is required and MUST cause registration to fail when unsupported. An unsupported vocabulary declared <code>false</code> MAY be ignored only according to its optional semantics.</li>
+      <li class="" style="">Regular expressions use the ECMA-262-compatible semantics required by JSON Schema and MUST be resource bounded.</li>
+      <li class="" style="">Unknown annotation keywords MAY be retained and ignored; an unsupported assertion keyword MUST cause registration to fail.</li>
+    </ul>
+    <p class="" style="">The target's evaluation of the exact registered schema is authoritative.</p>
+  </div>
+  <div class="indent"><h3 id="identity-presence">8.8 Identity and Presence<a class="anchor-link" href="#identity-presence"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">An endpoint MAY publish a profile with <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0292.html">vCard4 over XMPP (XEP-0292)</a></span>  [<a href="#nt-id73">11</a>]. For compatibility with deployed clients, it MAY also answer <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0054.html">vcard-temp (XEP-0054)</a></span>  [<a href="#nt-id74">12</a>] requests. Profile information disclosed publicly MUST be limited to data intended for all requesters.</p>
+    <p class="" style="">A hosted virtual endpoint SHOULD respond to presence subscription requests and probes as specified by XMPP IM. A gateway acting for a virtual endpoint MAY approve a subscription with <code>subscribed</code> and then send available presence. Presence reflects communications availability; detailed tool state remains in endpoint information.</p>
+    <p class="" style="">Runtime availability is volatile and MUST be communicated with presence, not a cacheable service-discovery form. A cold-startable endpoint MAY be unavailable in XMPP presence while still advertising the static capability <code>cold_start_supported=1</code>.</p>
+  </div>
+<h2 id="search">9.
+       Agent Directory Search<a class="anchor-link" href="#search"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">This section defines the optional Jabber Search Compatibility profile. A Core Directory implementation is not required to implement it. A conforming implementation of this profile MUST implement <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0055.html">Jabber Search (XEP-0055)</a></span>  [<a href="#nt-id66">4</a>] and <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0059.html">Result Set Management (XEP-0059)</a></span>  [<a href="#nt-id64">2</a>] at the gateway JID and advertise <code>jabber:iq:search</code>. It MUST support the legacy <code>nick</code> field and SHOULD support the <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0004.html">Data Forms (XEP-0004)</a></span>  [<a href="#nt-id72">10</a>] extensibility profile.</p>
+  <p class="" style=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0055.html">Jabber Search (XEP-0055)</a></span>  [<a href="#nt-id66">4</a>] is a compatibility surface for existing XMPP directory-search user interfaces. It complements, rather than replaces, browse-oriented <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0030.html">Service Discovery (XEP-0030)</a></span>  [<a href="#nt-id63">1</a>] listing.</p>
+  <p class="" style="">The search form MUST contain a hidden <code>FORM_TYPE</code> field whose value is <code>jabber:iq:search</code>. The <code>nick</code> field matches a deployment-defined combination of agent localpart, stable name, and display title. Matching SHOULD be Unicode-aware and case-insensitive. An empty query MAY list all endpoints visible to the requester.</p>
+  <figure class="code-example" id="example-8"><figcaption><strong>Example 8.</strong> Gateway returns an agent search form<a class="anchor-link" href="#example-8"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='agents.example'
+    to='juliet@example.net/phone'
+    id='search-form-1'
+    type='result'&gt;
+  &lt;query xmlns='jabber:iq:search'&gt;
+    &lt;instructions&gt;Enter a nickname to search for matching agents.&lt;/instructions&gt;
+    &lt;nick/&gt;
+    &lt;x xmlns='jabber:x:data' type='form'&gt;
+      &lt;title&gt;Agent Directory Search&lt;/title&gt;
+      &lt;field type='hidden' var='FORM_TYPE'&gt;
+        &lt;value&gt;jabber:iq:search&lt;/value&gt;
+      &lt;/field&gt;
+      &lt;field type='text-single' label='Nickname' var='nick'/&gt;
+    &lt;/x&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+</pre></figure>
+  <figure class="code-example" id="example-9"><figcaption><strong>Example 9.</strong> Client submits an agent search<a class="anchor-link" href="#example-9"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='juliet@example.net/phone'
+    to='agents.example'
+    id='search-1'
+    type='set'&gt;
+  &lt;query xmlns='jabber:iq:search'&gt;
+    &lt;set xmlns='http://jabber.org/protocol/rsm'&gt;
+      &lt;max&gt;50&lt;/max&gt;
+    &lt;/set&gt;
+    &lt;x xmlns='jabber:x:data' type='submit'&gt;
+      &lt;field type='hidden' var='FORM_TYPE'&gt;
+        &lt;value&gt;jabber:iq:search&lt;/value&gt;
+      &lt;/field&gt;
+      &lt;field var='nick'&gt;&lt;value&gt;weather&lt;/value&gt;&lt;/field&gt;
+    &lt;/x&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+</pre></figure>
+  <figure class="code-example" id="example-10"><figcaption><strong>Example 10.</strong> Gateway returns agent search results<a class="anchor-link" href="#example-10"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='agents.example'
+    to='juliet@example.net/phone'
+    id='search-1'
+    type='result'&gt;
+  &lt;query xmlns='jabber:iq:search'&gt;
+    &lt;x xmlns='jabber:x:data' type='result'&gt;
+      &lt;reported&gt;
+        &lt;field var='jid' label='Jabber ID' type='jid-single'/&gt;
+        &lt;field var='nick' label='Nickname' type='text-single'/&gt;
+      &lt;/reported&gt;
+      &lt;item&gt;
+        &lt;field var='jid'&gt;&lt;value&gt;weather@agents.example&lt;/value&gt;&lt;/field&gt;
+        &lt;field var='nick'&gt;&lt;value&gt;Weather Agent&lt;/value&gt;&lt;/field&gt;
+      &lt;/item&gt;
+    &lt;/x&gt;
+    &lt;set xmlns='http://jabber.org/protocol/rsm'&gt;
+      &lt;first&gt;weather@agents.example&lt;/first&gt;
+      &lt;last&gt;weather@agents.example&lt;/last&gt;
+      &lt;count&gt;1&lt;/count&gt;
+    &lt;/set&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+</pre></figure>
+  <p class="" style="">The gateway MUST apply the same visibility policy to search as to directory listing. It MUST return an empty result rather than reveal that hidden endpoints exist. Results MUST be ordered by normalized endpoint bare JID using octetwise ascending order; that bare JID is the stable RSM item ID. Counts include only visible matches. The RSM set is outside the Data Form, and the result form contains only <code>reported</code> and <code>item</code> children so that it conforms to the multi-item result rules in <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0004.html">Data Forms (XEP-0004)</a></span>  [<a href="#nt-id72">10</a>].</p>
+<h2 id="registration">10.
+       Endpoint Registration<a class="anchor-link" href="#registration"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <div class="indent"><h3 id="manifest">10.1 Manifest Model<a class="anchor-link" href="#manifest"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">An endpoint registers an immutable JSON manifest. The manifest is an independent XMPP data model based on the MCP Tool model and contains the following members:</p>
+    <figure class="table"><figcaption id="table-5"><strong>Table 5:</strong> Agent manifest members<a class="anchor-link" href="#table-5"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">Member</th><th colspan="" rowspan="">Requirement</th><th colspan="" rowspan="">Description</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>manifestSpecVersion</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Manifest model version. This specification defines the JSON string <code>"0"</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent.jid</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Bare JID controlled by the registering principal.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent.name</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Stable implementation name.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent.title</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Human-readable display name.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent.description</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Human-readable description.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent.version</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Endpoint API version.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>implementation.name</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Implementation product name, distinct from endpoint identity.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>implementation.version</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Implementation release version, distinct from the endpoint API version.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>mcpProtocolVersion</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">MCP protocol revision used by an MCP bridge.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent.vendor</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Provider or implementer name.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent.homepage</code></td><td align="" colspan="" rowspan="">OPTIONAL</td><td align="" colspan="" rowspan="">Informational HTTPS URI. Gateways and clients MUST NOT dereference it as part of registration, discovery, or other automatic protocol processing.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>tools</code></td><td align="" colspan="" rowspan="">REQUIRED</td><td align="" colspan="" rowspan="">Array of zero or more tool definitions.</td></tr>
+    </table></figure>
+    <p class="" style="">Each tool MUST contain <code>name</code> and <code>inputSchema</code>. It MAY contain <code>title</code>, <code>description</code>, <code>outputSchema</code>, MCP <code>annotations</code>, MCP <code>execution</code>, MCP <code>_meta</code>, and an XMPP extension object named <code>urn:xmpp:agent-api:0</code>. The MCP members retain their MCP-defined semantics exactly. XMPP-specific progress, cancellation, timeout, authorization, and tag declarations belong only in the namespaced extension object. Tool names MUST satisfy the grammar in <a href="#namespaces">Protocol Namespaces and Identifiers</a> and MUST be unique within one manifest.</p>
+    <p class="" style="">The endpoint and tool service-discovery features are authoritative for XMPP capability negotiation. Tool-specific declarations apply only after that tool has been selected and MUST NOT override an endpoint capability advertised as unsupported.</p>
+    <p class="" style="">Execution and authorization hints are declarations, not grants. A gateway MUST derive effective authorization from trusted policy and MUST fail closed when a declared permission or approval requirement cannot be enforced.</p>
+    <p class="" style="">This version uses all-or-nothing manifest visibility. A requester authorized to retrieve a manifest sees every tool in it. A deployment requiring tool-level visibility MUST publish separate endpoint versions or endpoint JIDs; it MUST NOT return a requester-filtered document under the registered manifest hash.</p>
+    <figure class="code-example" id="example-11"><figcaption><strong>Example 11.</strong> Agent API manifest<a class="anchor-link" href="#example-11"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+{
+  "manifestSpecVersion": "0",
+  "agent": {
+    "jid": "weather@agents.example",
+    "name": "weather",
+    "title": "Weather Agent",
+    "description": "Provides weather forecasts.",
+    "version": "1.4.0",
+    "vendor": "Example"
+  },
+  "implementation": {"name":"example-weather","version":"3.2.1"},
+  "mcpProtocolVersion": "2025-11-25",
+  "tools": [{
+    "name": "forecast.get",
+    "title": "Get Forecast",
+    "description": "Gets a forecast for one city.",
+    "inputSchema": {
+      "type": "object",
+      "properties": { "city": { "type": "string" } },
+      "required": ["city"],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": { "summary": { "type": "string" } },
+      "required": ["summary"]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    },
+    "execution": {"taskSupport":"optional"},
+    "urn:xmpp:agent-api:0": {
+      "supportsProgress": true,
+      "supportsCancellation": true,
+      "defaultTimeoutSeconds": 30,
+      "maximumTimeoutSeconds": 120,
+      "requiredPermissions": ["weather.read"],
+      "approvalRequired": false,
+      "tags": ["weather", "forecast"]
+    }
+  }]
+}
+</pre></figure>
+    <p class="" style="">The following JSON Schema is normative for manifests. Limits shown here are protocol maxima; deployments MAY impose smaller documented limits. MCP-owned objects follow the MCP protocol revision declared by the manifest. Unknown top-level members are forbidden; extensions use URI-valued member names within a tool.</p>
+    <figure class="code"><figcaption>Normative agent manifest JSON Schema</figcaption><pre class="prettyprint">
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:xmpp:agent-api:0#manifest-json",
+  "type": "object",
+  "required": ["manifestSpecVersion", "agent", "tools"],
+  "properties": {
+    "manifestSpecVersion": {"const": "0"},
+    "agent": {
+      "type": "object",
+      "required": ["jid", "name", "version"],
+      "properties": {
+        "jid": {"type":"string","minLength":3,"maxLength":3071},
+        "name": {"type":"string","minLength":1,"maxLength":128},
+        "title": {"type":"string","maxLength":256},
+        "description": {"type":"string","maxLength":4096},
+        "version": {
+          "type":"string",
+          "pattern":"^[A-Za-z0-9._~-]{1,64}$"
+        },
+        "vendor": {"type":"string","maxLength":256},
+        "homepage": {"type":"string","format":"uri","maxLength":2048}
+      },
+      "additionalProperties": false
+    },
+    "implementation": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type":"string","minLength":1,"maxLength":128},
+        "version": {"type":"string","minLength":1,"maxLength":128}
+      },
+      "additionalProperties": false
+    },
+    "mcpProtocolVersion": {
+      "type":"string",
+      "pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "tools": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "required": ["name", "inputSchema"],
+        "properties": {
+          "name": {
+            "type":"string",
+            "minLength":1
+          },
+          "title": {"type":"string","maxLength":256},
+          "description": {"type":"string","maxLength":8192},
+          "inputSchema": {"type":"object"},
+          "outputSchema": {"type":"object"},
+          "annotations": {"type":"object"},
+          "execution": {"type":"object"},
+          "_meta": {"type":"object"},
+          "urn:xmpp:agent-api:0": {
+            "type":"object",
+            "properties":{
+              "supportsProgress":{"type":"boolean"},
+              "supportsCancellation":{"type":"boolean"},
+              "supportsInput":{"type":"boolean"},
+              "defaultTimeoutSeconds":{"type":"integer","minimum":1},
+              "maximumTimeoutSeconds":{"type":"integer","minimum":1},
+              "requiredPermissions":{
+                "type":"array",
+                "items":{"type":"string","minLength":1,"maxLength":256},
+                "uniqueItems":true
+              },
+              "approvalRequired":{"type":"boolean"},
+              "tags":{
+                "type":"array",
+                "items":{"type":"string","minLength":1,"maxLength":128},
+                "uniqueItems":true
+              }
+            },
+            "additionalProperties":false
+          }
+        },
+        "patternProperties": {
+          "^[a-z][a-z0-9+.-]*:": {}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="registration-flow">10.2 Registration Flow<a class="anchor-link" href="#registration-flow"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">Self-registration and trusted administrative provisioning are different conformance profiles. Self-registration applies only to a genuine authenticated C2S endpoint whose authenticated bare JID equals <code>agent.jid</code>. A virtual endpoint behind an internal module or <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0114.html">Jabber Component Protocol (XEP-0114)</a></span>  [<a href="#nt-id69">7</a>] component is provisioned by a trusted administrator through the Administrative Provisioning profile or a deployment-local API. Component authority MUST NOT be represented as if the virtual endpoint independently authenticated. Federation alone MUST NOT grant either authority.</p>
+    <figure class="code-example" id="example-12"><figcaption><strong>Example 12.</strong> Authenticated account self-registers an immutable manifest<a class="anchor-link" href="#example-12"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='weather@agents.example/runtime'
+    to='agents.example'
+    id='register-1'
+    type='set'&gt;
+  &lt;register xmlns='urn:xmpp:agent-api:0'&gt;
+    &lt;manifest media-type='application/json'&gt;
+      {"manifestSpecVersion":"0",
+       "agent":{"jid":"weather@agents.example",
+                "name":"weather","version":"1.4.0"},
+       "tools":[]}
+    &lt;/manifest&gt;
+  &lt;/register&gt;
+&lt;/iq&gt;
+
+&lt;iq from='agents.example'
+    to='weather@agents.example/runtime'
+    id='register-1'
+    type='result'&gt;
+  &lt;registered xmlns='urn:xmpp:agent-api:0'
+              jid='weather@agents.example'
+              version='1.4.0'&gt;
+    &lt;hash xmlns='urn:xmpp:hashes:2' algo='sha-256'&gt;K2/YdwvIBAlfUIeZHiNCyiYA4m4W2wrEOqXQDoQyXp4=&lt;/hash&gt;
+  &lt;/registered&gt;
+&lt;/iq&gt;
+</pre></figure>
+    <p class="" style="">The gateway MUST validate the manifest before committing it. Before hashing, manifests and schemas MUST satisfy the I-JSON prerequisites of <a href="https://www.rfc-editor.org/rfc/rfc8785">RFC 8785</a>: no duplicate object names, valid Unicode with no lone surrogates, and numbers representable as IEEE-754 double precision. Strings are preserved without Unicode normalization. The gateway canonicalizes according to RFC 8785, hashes the canonical UTF-8 bytes with SHA-256, and represents the hash with an <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] <code>hash</code> element using Base64 content. Invalid input is rejected before digest calculation. A hash is a cache validator and change detector, not proof of origin.</p>
+    <p class="" style="">The tuple <code>(endpoint bare JID, API version)</code> is immutable. Re-registering the same version and hash is idempotent. Re-registering the same version with different canonical content MUST fail with <code>conflict</code>. A new version creates a new immutable manifest. Semantic-version ordering MUST NOT be inferred.</p>
+    <p class="" style="">The Administrative Provisioning profile MUST provide IQ operations to register an immutable version, activate an existing version, deactivate an endpoint, inspect registration status, remove an inactive version, and remove an endpoint. These operations use the same XML namespace, are addressed to the gateway, and require trusted administrative authorization. Activating a version changes only the mutable selected-version pointer; it does not alter a manifest. Removal MUST fail while a retained task or result depends on that version. A removed version leaves a permanent endpoint-scoped version-and-hash tombstone: identical content MAY be restored, but different content under that version MUST always fail with <code>conflict</code>. A deployment MAY expose equivalent local administration instead of advertising <code>urn:xmpp:agent-api:0#admin</code> federatively.</p>
+    <figure class="table"><figcaption id="table-6"><strong>Table 6:</strong> Administrative provisioning operations<a class="anchor-link" href="#table-6"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">IQ set or get child</th><th colspan="" rowspan="">Successful IQ result child</th><th colspan="" rowspan="">Semantics</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>register</code></td><td align="" colspan="" rowspan=""><code>registered</code></td><td align="" colspan="" rowspan="">Create an immutable version or idempotently confirm identical content.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>activate jid='…' version='…'</code></td><td align="" colspan="" rowspan=""><code>active</code></td><td align="" colspan="" rowspan="">Select an existing version after verifying its hash child.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>deactivate jid='…'</code></td><td align="" colspan="" rowspan=""><code>deactivated</code></td><td align="" colspan="" rowspan="">Remove the active-version pointer without deleting manifests.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>registration-status jid='…'</code></td><td align="" colspan="" rowspan=""><code>registration</code></td><td align="" colspan="" rowspan="">Return active version, registered versions and hashes, and whether each version is removable.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>remove-version jid='…' version='…'</code></td><td align="" colspan="" rowspan=""><code>removed</code></td><td align="" colspan="" rowspan="">Remove one inactive, unreferenced version.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>remove-endpoint jid='…'</code></td><td align="" colspan="" rowspan=""><code>removed</code></td><td align="" colspan="" rowspan="">Deactivate and remove all versions only when none is retained by a task or result.</td></tr>
+    </table></figure>
+    <figure class="code-example" id="example-13"><figcaption><strong>Example 13.</strong> Administrator activates a registered version<a class="anchor-link" href="#example-13"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='admin@example.net/console'
+    to='agents.example'
+    id='activate-1'
+    type='set'&gt;
+  &lt;activate xmlns='urn:xmpp:agent-api:0'
+            jid='weather@agents.example'
+            version='1.4.0'&gt;
+    &lt;hash xmlns='urn:xmpp:hashes:2' algo='sha-256'&gt;K2/YdwvIBAlfUIeZHiNCyiYA4m4W2wrEOqXQDoQyXp4=&lt;/hash&gt;
+  &lt;/activate&gt;
+&lt;/iq&gt;
+
+&lt;iq from='agents.example'
+    to='admin@example.net/console'
+    id='activate-1'
+    type='result'&gt;
+  &lt;active xmlns='urn:xmpp:agent-api:0'
+          jid='weather@agents.example'
+          version='1.4.0'/&gt;
+&lt;/iq&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="manifest-retrieval">10.3 Manifest Retrieval<a class="anchor-link" href="#manifest-retrieval"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">A client retrieves a manifest by sending an IQ <code>get</code> containing <code>manifest-request</code> to the endpoint. Omitting <code>version</code> requests the active version; a client MUST then pin the returned version and hash before listing tools, retrieving schemas, or invoking. Supplying <code>version</code> requests that exact immutable version.</p>
+    <ul class="" style="">
+      <li class="" style="">The result MUST contain the exact version, <code>media-type='application/json'</code>, an <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] hash, and the canonical registered JSON document.</li>
+      <li class="" style="">After XML character extraction, the UTF-8 bytes in <code>json</code> MUST be byte-for-byte identical to the RFC 8785 canonical bytes that were hashed and advertised.</li>
+      <li class="" style="">The stored source formatting is not protocol-visible and MUST NOT affect retrieval or hash validation.</li>
+      <li class="" style="">Access control MUST be identical to the corresponding tool and schema discovery policy.</li>
+    </ul>
+    <p class="" style="">A previously registered version remains addressable by exact value to a client that recorded it. Version enumeration is not defined. The target MUST retain the exact manifest and schemas selected at task admission through the task lifetime and promised result-retention period.</p>
+    <figure class="code-example" id="example-14"><figcaption><strong>Example 14.</strong> Client retrieves the selected manifest<a class="anchor-link" href="#example-14"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='juliet@example.net/phone'
+    to='weather@agents.example'
+    id='manifest-1'
+    type='get'&gt;
+  &lt;manifest-request xmlns='urn:xmpp:agent-api:0'/&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='juliet@example.net/phone'
+    id='manifest-1'
+    type='result'&gt;
+  &lt;manifest xmlns='urn:xmpp:agent-api:0'
+            version='1.4.0'
+            media-type='application/json'&gt;
+    &lt;hash xmlns='urn:xmpp:hashes:2' algo='sha-256'&gt;K2/YdwvIBAlfUIeZHiNCyiYA4m4W2wrEOqXQDoQyXp4=&lt;/hash&gt;
+    &lt;json&gt;{"agent":{"jid":"weather@agents.example","name":"weather","version":"1.4.0"},"manifestSpecVersion":"0","tools":[]}&lt;/json&gt;
+  &lt;/manifest&gt;
+&lt;/iq&gt;
+</pre></figure>
+  </div>
+<h2 id="json-encoding">11.
+       JSON Payload Encoding<a class="anchor-link" href="#json-encoding"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">Every JSON-bearing element in this specification contains exactly one logical JSON text. Its XML character content, after normal XML entity decoding and concatenation of adjacent character-data nodes, MUST parse as one JSON value with no trailing non-whitespace data. Producers SHOULD emit one character-data node and MUST NOT depend on CDATA boundaries. Unless explicitly stated otherwise, the media type is <code>application/json</code>. Where the XML Schema requires a <code>media-type</code> attribute, producers MUST include it even when <code>application/json</code> is the only permitted value.</p>
+  <p class="" style="">JSON text MUST be encoded as UTF-8 and MUST also be legal XML character data. Producers MUST escape XML markup characters as XML requires, MUST encode JSON control characters with JSON escapes, and MUST reject lone Unicode surrogate code points and characters forbidden by the negotiated XML version. Consumers MUST preserve whitespace inside JSON strings but MAY ignore insignificant JSON whitespace outside strings.</p>
+  <p class="" style="">Gateways MUST impose documented limits on JSON byte length, nesting depth, string length, array and object member count, and parsing time. External JSON Schema references MUST NOT be resolved unless an explicit allowlist and resource budget permit them.</p>
+<h2 id="event-json-schemas">12.
+       Lifecycle JSON Schemas<a class="anchor-link" href="#event-json-schemas"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">The following JSON Schema is normative for task event payloads. It uses JSON Schema 2020-12 and selects a definition by the XML <code>event/@type</code> value. Unknown JSON members are forbidden except inside tool-result content, structured content, metadata, schemas, and deployment-qualified error details. Producers MUST use the exact camel-case member names shown here.</p>
+  <figure class="code"><figcaption>Normative task event payload JSON Schema</figcaption><pre class="prettyprint">
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:xmpp:agent-task:0#event-json",
+  "$defs": {
+    "status": {
+      "type": "object",
+      "required": ["state", "updatedAt"],
+      "properties": {
+        "state": {"enum":["running","input_required","cancelling"]},
+        "updatedAt": {"type":"string","format":"date-time"}
+      },
+      "additionalProperties": false
+    },
+    "progress": {
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "percent": {"type":"number","minimum":0,"maximum":100},
+        "stage": {"type":"string","maxLength":256},
+        "message": {"type":"string","maxLength":4096}
+      },
+      "additionalProperties": false
+    },
+    "input_required": {
+      "type": "object",
+      "required": ["requestId", "question", "inputSchema", "createdAt"],
+      "properties": {
+        "requestId": {
+          "type":"string",
+          "pattern":"^[A-Za-z0-9._~-]{22,128}$"
+        },
+        "question": {"type":"string","minLength":1,"maxLength":4096},
+        "inputSchema": {"type":"object"},
+        "createdAt": {"type":"string","format":"date-time"},
+        "expiresAt": {"type":"string","format":"date-time"}
+      },
+      "additionalProperties": false
+    },
+    "toolResult": {
+      "type": "object",
+      "required": ["content"],
+      "properties": {
+        "content": {"type":"array","items":{"type":"object"}},
+        "structuredContent": {},
+        "isError": {"type":"boolean"},
+        "_meta": {"type":"object"}
+      },
+      "additionalProperties": false
+    },
+    "completed": {
+      "type": "object",
+      "required": ["result"],
+      "properties": {
+        "result": {"$ref":"#/$defs/toolResult"},
+        "summary": {"type":"string","maxLength":4096}
+      },
+      "additionalProperties": false
+    },
+    "failed": {
+      "type": "object",
+      "required": ["error"],
+      "properties": {
+        "error": {
+          "type":"object",
+          "required":["code","message","retryable"],
+          "properties":{
+            "code":{"type":"string","pattern":"^[A-Za-z0-9_.:-]{1,128}$"},
+            "message":{"type":"string","minLength":1,"maxLength":4096},
+            "retryable":{"type":"boolean"},
+            "details":{"type":"object"}
+          },
+          "additionalProperties":false
+        }
+      },
+      "additionalProperties": false
+    },
+    "cancelled": {
+      "type": "object",
+      "properties": {
+        "reason": {"type":"string","maxLength":4096}
+      },
+      "additionalProperties": false
+    }
+  }
+}
+</pre></figure>
+  <p class="" style="">A status event validates against <code>$defs.status</code>, and equivalently for <code>progress</code>, <code>input_required</code>, <code>completed</code>, <code>failed</code>, and <code>cancelled</code>. Every <code>date-time</code> string MUST also conform to <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0082.html">XMPP Date and Time Profiles (XEP-0082)</a></span>  [<a href="#nt-id75">13</a>]. The <code>provide-input/input</code> value is validated against the exact pending <code>inputSchema</code>. A <code>task-result</code> payload is the same object as the corresponding terminal event payload. Implementations MUST reject event payloads that do not validate.</p>
+<h2 id="execution">13.
+       Tool Execution<a class="anchor-link" href="#execution"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <div class="indent"><h3 id="invocation">13.1 Invocation<a class="anchor-link" href="#invocation"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">Tool execution is asynchronous even when a local API offers a blocking convenience call. The caller creates a globally unpredictable <code>request-id</code> and sends an IQ <code>set</code> containing <code>invoke</code>. The target creates the <code>task-id</code> only after successful validation and durable admission. Both identifiers MUST contain 22 to 128 ASCII characters from <code>[A-Za-z0-9._~-]</code> and MUST contain at least 128 bits of unpredictability generated by a cryptographically secure random number generator. A deployment-local correlation ID MAY associate this operation with application state, but it has no wire authority.</p>
+    <figure class="code-example" id="example-15"><figcaption><strong>Example 15.</strong> Caller invokes a remote tool<a class="anchor-link" href="#example-15"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='planner@agents.example/worker'
+    to='weather@agents.example'
+    id='invoke-1'
+    type='set'&gt;
+  &lt;invoke xmlns='urn:xmpp:agent-task:0'
+          request-id='req-91a6d2f49c514f44a2d223f0f97bd9fe'
+          tool='forecast.get'
+          api-version='1.4.0'&gt;
+    &lt;manifest-hash&gt;
+      &lt;hash xmlns='urn:xmpp:hashes:2' algo='sha-256'&gt;K2/YdwvIBAlfUIeZHiNCyiYA4m4W2wrEOqXQDoQyXp4=&lt;/hash&gt;
+    &lt;/manifest-hash&gt;
+    &lt;arguments media-type='application/json'&gt;{"city":"Riga"}&lt;/arguments&gt;
+    &lt;deadline&gt;2026-07-27T19:15:00Z&lt;/deadline&gt;
+  &lt;/invoke&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='planner@agents.example/worker'
+    id='invoke-1'
+    type='result'&gt;
+  &lt;accepted xmlns='urn:xmpp:agent-task:0'
+            request-id='req-91a6d2f49c514f44a2d223f0f97bd9fe'
+            task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+            revision='0'
+            created='2026-07-27T19:14:01Z'
+            retain-until='2026-07-28T19:14:01Z'/&gt;
+&lt;/iq&gt;
+</pre></figure>
+    <p class="" style="">The <code>request-id</code>, <code>tool</code>, <code>api-version</code>, manifest hash, and <code>arguments</code> are REQUIRED. The arguments element MUST include <code>media-type='application/json'</code>. A target MUST pin the exact manifest and schemas before admission. The authoritative authorization principal is the immediate authenticated sender's bare JID. The full JID that issued the IQ is the default best-effort notification route; any authorized resource of the same bare JID can use recovery operations.</p>
+    <p class="" style="">The target computes a replay fingerprint over the authenticated caller bare JID, target bare JID, protocol namespace, request ID, tool, API version, manifest hash, canonical arguments, deadline, and every security-relevant extension. During the advertised replay window, reuse with the same fingerprint MUST return the same accepted task and MUST NOT execute twice; reuse with a different fingerprint MUST fail with <code>conflict</code>. A target MUST retain the replay record through the longer of that window, the task lifetime, and the promised result-retention period.</p>
+    <p class="" style="">After the advertised replay window and all required task retention have expired, a target MAY forget the request ID and MAY admit a repeated request as new work. Therefore a caller MUST NOT retry after that window without tool-specific reconciliation. This protocol provides at-most-once task admission only inside the replay-retention window and does not claim exactly-once external side effects.</p>
+    <p class="" style="">An IQ result containing <code>accepted</code> represents durable task acceptance, not merely receipt of the request. The target MUST persist the task and replay record before sending that result.</p>
+    <ul class="" style="">
+      <li class="" style="">Malformed, unauthorized, conflicting, unavailable, expired, or schema-invalid requests fail before admission with an ordinary IQ error and create no task.</li>
+      <li class="" style="">Loss of the IQ result leaves execution uncertain; the caller MUST retry the identical request ID rather than create a new request.</li>
+      <li class="" style=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0184.html">Message Delivery Receipts  (XEP-0184)</a></span>  [<a href="#nt-id67">5</a>] does not apply to IQ admission.</li>
+    </ul>
+  </div>
+  <div class="indent"><h3 id="federated-example">13.2 Federated Invocation Example<a class="anchor-link" href="#federated-example"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">This example shows a caller at <code>example.com</code> discovering and invoking an endpoint at <code>agents.example</code>. Normal XMPP server-to-server authentication establishes the immediate sender domain; the target's explicit federation policy still determines visibility and authorization.</p>
+    <figure class="code-example" id="example-16"><figcaption><strong>Example 16.</strong> Federated discovery, durable acceptance, and completion<a class="anchor-link" href="#example-16"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='alice@example.com/laptop'
+    to='agents.example'
+    id='federated-disco-1'
+    type='get'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#info'/&gt;
+&lt;/iq&gt;
+
+&lt;iq from='agents.example'
+    to='alice@example.com/laptop'
+    id='federated-disco-1'
+    type='result'&gt;
+  &lt;query xmlns='http://jabber.org/protocol/disco#info'&gt;
+    &lt;identity category='automation' type='agent-gateway'/&gt;
+    &lt;feature var='http://jabber.org/protocol/disco#info'/&gt;
+    &lt;feature var='http://jabber.org/protocol/disco#items'/&gt;
+    &lt;feature var='urn:xmpp:agent-directory:0'/&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;
+
+&lt;iq from='alice@example.com/laptop'
+    to='weather@agents.example'
+    id='federated-invoke-1'
+    type='set'&gt;
+  &lt;invoke xmlns='urn:xmpp:agent-task:0'
+          request-id='req-f83bf930e7ae45e6bddca1afb566df08'
+          tool='forecast.get'
+          api-version='1.4.0'&gt;
+    &lt;manifest-hash&gt;
+      &lt;hash xmlns='urn:xmpp:hashes:2'
+            algo='sha-256'&gt;K2/YdwvIBAlfUIeZHiNCyiYA4m4W2wrEOqXQDoQyXp4=&lt;/hash&gt;
+    &lt;/manifest-hash&gt;
+    &lt;arguments media-type='application/json'&gt;{"city":"Riga"}&lt;/arguments&gt;
+  &lt;/invoke&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='alice@example.com/laptop'
+    id='federated-invoke-1'
+    type='result'&gt;
+  &lt;accepted xmlns='urn:xmpp:agent-task:0'
+            request-id='req-f83bf930e7ae45e6bddca1afb566df08'
+            task-id='task-c27daf5e3a9b45e086a6616e28139dcb'
+            revision='0'
+            created='2026-07-28T10:00:00Z'
+            retain-until='2026-07-29T10:00:00Z'/&gt;
+&lt;/iq&gt;
+
+&lt;message from='weather@agents.example'
+         to='alice@example.com/laptop'
+         id='federated-result-1'
+         type='normal'&gt;
+  &lt;event xmlns='urn:xmpp:agent-task:0'
+         task-id='task-c27daf5e3a9b45e086a6616e28139dcb'
+         event-id='evt-f53573cb922d44be97a674971aa9da71'
+         revision='1'
+         type='completed'&gt;
+    {"result":{"content":[{"type":"text","text":"Light rain, 18 C"}],
+               "structuredContent":{"summary":"Light rain, 18 C"},
+               "isError":false}}
+  &lt;/event&gt;
+&lt;/message&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="events">13.3 Lifecycle Events<a class="anchor-link" href="#events"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The target sends best-effort lifecycle notifications as normal messages containing an <code>event</code> element. The event text is a JSON object governed by <a href="#event-json-schemas">Lifecycle JSON Schemas</a>. Every event carries the receiver-generated task ID, a globally unique unpredictable <code>event-id</code>, and a global revision. Revision <code>0</code> is the accepted state returned by IQ. Each committed state transition MUST increase the revision by exactly one and generate exactly one event at that revision. Each committed progress update likewise increases it by exactly one. Delivery can lose an event, but the target does not create revision gaps through hidden transitions.</p>
+    <figure class="table"><figcaption id="table-7"><strong>Table 7:</strong> Task lifecycle event types<a class="anchor-link" href="#table-7"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">Type</th><th colspan="" rowspan="">Sender</th><th colspan="" rowspan="">Required or common JSON members</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>status</code></td><td align="" colspan="" rowspan="">Target</td><td align="" colspan="" rowspan=""><code>state</code> and <code>updatedAt</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>progress</code></td><td align="" colspan="" rowspan="">Target</td><td align="" colspan="" rowspan=""><code>percent</code>, <code>stage</code>, and <code>message</code>, as applicable.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>input_required</code></td><td align="" colspan="" rowspan="">Target</td><td align="" colspan="" rowspan=""><code>requestId</code>, <code>question</code>, <code>inputSchema</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>completed</code></td><td align="" colspan="" rowspan="">Target</td><td align="" colspan="" rowspan=""><code>result</code> containing the complete result envelope and optional <code>summary</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>failed</code></td><td align="" colspan="" rowspan="">Target</td><td align="" colspan="" rowspan=""><code>error</code> containing <code>code</code>, <code>message</code>, <code>retryable</code>, and optional qualified details.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>cancelled</code></td><td align="" colspan="" rowspan="">Target</td><td align="" colspan="" rowspan="">Empty object or optional <code>reason</code>.</td></tr>
+    </table></figure>
+    <figure class="code-example" id="example-17"><figcaption><strong>Example 17.</strong> Target notifies the caller that execution is running<a class="anchor-link" href="#example-17"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;message from='weather@agents.example'
+         to='planner@agents.example/worker'
+         id='status-task-7f2a9c41d8804e96bb478af6453c0371'
+         type='normal'&gt;
+  &lt;event xmlns='urn:xmpp:agent-task:0'
+         task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+         event-id='evt-00d7b9a9b0864dcf9308d56e8f54b392'
+         revision='1'
+         type='status'&gt;
+    {"state":"running","updatedAt":"2026-07-27T19:14:02Z"}
+  &lt;/event&gt;
+&lt;/message&gt;
+</pre></figure>
+    <p class="" style="">The <code>retain-until</code> value in <code>accepted</code> is a unilateral promise by the target. Complete state and any terminal result MUST remain queryable until then, and state MUST remain queryable throughout a longer non-terminal lifetime. A caller requiring longer retention MUST preserve its own record.</p>
+    <p class="" style="">When present, progress <code>percent</code> MUST be a finite number from 0 through 100 inclusive and SHOULD be nondecreasing. An identical replay MUST retain the same event ID, revision, type, and canonical payload. A caller MUST ignore such a replay. A repeated revision with a different event ID or payload is a protocol error and MUST be ignored and logged. A revision gap does not imply failure; the caller SHOULD query task state, which returns the current revision and complete resumable state.</p>
+    <figure class="code-example" id="example-18"><figcaption><strong>Example 18.</strong> Target reports progress<a class="anchor-link" href="#example-18"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;message from='weather@agents.example'
+         to='planner@agents.example/worker'
+         id='progress-task-7f2a9c41d8804e96bb478af6453c0371'
+         type='normal'&gt;
+  &lt;event xmlns='urn:xmpp:agent-task:0'
+         task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+         event-id='evt-50a26b5692644a7880caa7ca56ca5b54'
+         revision='2'
+         type='progress'&gt;
+    {"percent":50,"stage":"fetch","message":"Forecast received"}
+  &lt;/event&gt;
+&lt;/message&gt;
+</pre></figure>
+    <figure class="code-example" id="example-19"><figcaption><strong>Example 19.</strong> Target requests input and caller answers<a class="anchor-link" href="#example-19"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;message from='weather@agents.example'
+         to='planner@agents.example/worker'
+         id='input-request-task-7f2a9c41d8804e96bb478af6453c0371'
+         type='normal'&gt;
+  &lt;event xmlns='urn:xmpp:agent-task:0'
+         task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+         event-id='evt-0b5851650e8a427f9b00499085d96f0f'
+         revision='3'
+         type='input_required'&gt;
+    {"requestId":"input-a5128a63d64146d5a6ffac65bb20c348",
+     "question":"Which forecast unit should be used?",
+     "inputSchema":{"type":"object","properties":{"unit":{"enum":["C","F"]}},
+                    "required":["unit"]},
+     "createdAt":"2026-07-27T19:14:04Z"}
+  &lt;/event&gt;
+&lt;/message&gt;
+
+&lt;iq from='planner@agents.example/worker'
+    to='weather@agents.example'
+    id='input-answer-1'
+    type='set'&gt;
+  &lt;provide-input xmlns='urn:xmpp:agent-task:0'
+                 task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+                 request-id='input-a5128a63d64146d5a6ffac65bb20c348'
+                 expected-revision='3'&gt;
+    &lt;input media-type='application/json'&gt;{"unit":"C"}&lt;/input&gt;
+  &lt;/provide-input&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='planner@agents.example/worker'
+    id='input-answer-1'
+    type='result'&gt;
+  &lt;input-accepted xmlns='urn:xmpp:agent-task:0'
+                  task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+                  revision='4'/&gt;
+&lt;/iq&gt;
+</pre></figure>
+    <figure class="code-example" id="example-20"><figcaption><strong>Example 20.</strong> Caller requests cancellation and target confirms<a class="anchor-link" href="#example-20"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='planner@agents.example/worker'
+    to='weather@agents.example'
+    id='cancel-request-1'
+    type='set'&gt;
+  &lt;cancel xmlns='urn:xmpp:agent-task:0'
+          task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+          expected-revision='4'&gt;
+    &lt;reason&gt;Trip was cancelled&lt;/reason&gt;
+  &lt;/cancel&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='planner@agents.example/worker'
+    id='cancel-request-1'
+    type='result'&gt;
+  &lt;cancel-accepted xmlns='urn:xmpp:agent-task:0'
+                   task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+                   revision='5'/&gt;
+&lt;/iq&gt;
+
+&lt;message from='weather@agents.example'
+         to='planner@agents.example/worker'
+         id='cancelled-task-7f2a9c41d8804e96bb478af6453c0371'
+         type='normal'&gt;
+  &lt;event xmlns='urn:xmpp:agent-task:0'
+         task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+         event-id='evt-7413f189224b45bc8634f2eaec99961b'
+         revision='6'
+         type='cancelled'&gt;{}&lt;/event&gt;
+&lt;/message&gt;
+</pre></figure>
+    <figure class="code-example" id="example-21"><figcaption><strong>Example 21.</strong> Target reports task failure<a class="anchor-link" href="#example-21"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;message from='weather@agents.example'
+         to='planner@agents.example/worker'
+         id='failed-task-7f2a9c41d8804e96bb478af6453c0371'
+         type='normal'&gt;
+  &lt;event xmlns='urn:xmpp:agent-task:0'
+         task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+         event-id='evt-59dd231300a54913815812a0d6a422a0'
+         revision='4'
+         type='failed'&gt;
+    {"error":{"code":"unavailable",
+              "message":"Forecast provider is temporarily unavailable.",
+              "retryable":true}}
+  &lt;/event&gt;
+&lt;/message&gt;
+</pre></figure>
+    <figure class="code-example" id="example-22"><figcaption><strong>Example 22.</strong> Target completes a task<a class="anchor-link" href="#example-22"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;message from='weather@agents.example'
+         to='planner@agents.example/worker'
+         id='completed-task-7f2a9c41d8804e96bb478af6453c0371'
+         type='normal'&gt;
+  &lt;event xmlns='urn:xmpp:agent-task:0'
+         task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+         event-id='evt-2c1187df307a45e6bdef7c3b34073c7c'
+         revision='4'
+         type='completed'&gt;
+    {"result":{"content":[{"type":"text","text":"Light rain, 18 C"}],
+               "structuredContent":{"summary":"Light rain, 18 C"},
+               "isError":false},
+     "summary":"Forecast ready"}
+  &lt;/event&gt;
+&lt;/message&gt;
+</pre></figure>
+    <p class="" style="">The <code>result</code> member is the complete tool result envelope. An MCP bridge preserves <code>CallToolResult.content</code>, <code>structuredContent</code>, <code>isError</code>, and <code>_meta</code> as a whole. An MCP result with <code>isError=true</code> is still a successfully completed tool call and MUST NOT be converted into infrastructure state <code>failed</code>. When the selected tool declares an <code>outputSchema</code>, the target MUST validate <code>structuredContent</code> before completion, and the caller SHOULD validate it again.</p>
+  </div>
+  <div class="indent"><h3 id="interactive-input">13.4 Interactive Input<a class="anchor-link" href="#interactive-input"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">When a target cannot continue without caller input, it commits state <code>input_required</code> and sends a notification with a task-unique request ID, a human-readable question, a JSON Schema, creation time, and optional expiry time. At most one input request may be pending per task. Only an authorized resource of the authenticated caller bare JID may answer, using IQ <code>set</code> with <code>provide-input</code>. The target authoritatively validates the input and expected revision before returning <code>input-accepted</code>. Unknown request IDs receive <code>item-not-found</code>; schema-invalid input receives <code>not-acceptable</code>; stale, expired, already answered, or conflicting input receives <code>conflict</code>. Repeating an identical accepted IQ is idempotent.</p>
+    <p class="" style="">Every state response while input is pending MUST include the complete pending request, including its expiry if any, so loss of the notification is recoverable. On input expiry the target MUST atomically issue a new input request or settle the task. Cancellation may transition pending input to <code>cancelling</code>. Terminal settlement wins any race with input, and input received after terminal settlement MUST fail with <code>conflict</code>.</p>
+    <p class="" style="">Interactive input is data entry, not a standardized authorization grant. Human approval in version 0 can be satisfied only through trusted local or out-of-band policy. A target that cannot verify a required approval MUST fail closed. Secrets SHOULD be provided through a credential mechanism rather than copied into task payloads.</p>
+  </div>
+  <div class="indent"><h3 id="cancellation">13.5 Cancellation and Deadlines<a class="anchor-link" href="#cancellation"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">Only an authorized resource of the authenticated caller bare JID may request cancellation, using IQ <code>set</code>. A cancellation request is accepted exactly once, moves a non-terminal task to <code>cancelling</code>, and remains advisory until the target settles it as <code>cancelled</code>, <code>completed</code>, or <code>failed</code>. The target alone chooses and commits the terminal state. If settlement committed first, cancellation fails with <code>conflict</code>; if cancellation committed first, later tool output cannot overwrite the terminal result.</p>
+    <p class="" style="">Deadlines MUST conform to <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0082.html">XMPP Date and Time Profiles (XEP-0082)</a></span>  [<a href="#nt-id75">13</a>]. If the target's accepted deadline expires while its task is non-terminal, the target MUST settle the task as <code>failed</code> with code <code>deadline-expired</code>. A caller-side wait timeout is only a local observation and MUST NOT create or assert a remote terminal state. Timeout does not prove that side effects did not occur; the caller MUST recover state or retry the identical request ID before considering a new side-effecting invocation.</p>
+  </div>
+  <div class="indent"><h3 id="task-states">13.6 Task States<a class="anchor-link" href="#task-states"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <figure class="table"><figcaption id="table-8"><strong>Table 8:</strong> Task states<a class="anchor-link" href="#table-8"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">State</th><th colspan="" rowspan="">Meaning</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>accepted</code></td><td align="" colspan="" rowspan="">Task was durably accepted.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>running</code></td><td align="" colspan="" rowspan="">Tool execution is in progress.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>input_required</code></td><td align="" colspan="" rowspan="">Target is waiting for caller input.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>cancelling</code></td><td align="" colspan="" rowspan="">Cancellation was requested but is not terminal.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>cancelled</code></td><td align="" colspan="" rowspan="">Target confirmed cancellation. Terminal.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>failed</code></td><td align="" colspan="" rowspan="">Execution failed. Terminal.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>completed</code></td><td align="" colspan="" rowspan="">Execution completed successfully. Terminal.</td></tr>
+    </table></figure>
+    <figure class="table"><figcaption id="table-9"><strong>Table 9:</strong> Normative task transitions<a class="anchor-link" href="#table-9"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">Source</th><th colspan="" rowspan="">Destination</th><th colspan="" rowspan="">Authorizing action</th><th colspan="" rowspan="">Notification</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>accepted</code></td><td align="" colspan="" rowspan=""><code>running</code></td><td align="" colspan="" rowspan="">Target starts execution.</td><td align="" colspan="" rowspan=""><code>status</code></td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>accepted</code> or <code>running</code></td><td align="" colspan="" rowspan=""><code>input_required</code></td><td align="" colspan="" rowspan="">Target commits one pending input request.</td><td align="" colspan="" rowspan=""><code>input_required</code></td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>input_required</code></td><td align="" colspan="" rowspan=""><code>running</code></td><td align="" colspan="" rowspan="">Target accepts valid caller input.</td><td align="" colspan="" rowspan=""><code>status</code></td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Any non-terminal state</td><td align="" colspan="" rowspan=""><code>cancelling</code></td><td align="" colspan="" rowspan="">Target accepts an authorized cancellation IQ.</td><td align="" colspan="" rowspan=""><code>status</code></td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Any non-terminal state</td><td align="" colspan="" rowspan=""><code>completed</code></td><td align="" colspan="" rowspan="">Target atomically commits a successful tool result.</td><td align="" colspan="" rowspan=""><code>completed</code></td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Any non-terminal state</td><td align="" colspan="" rowspan=""><code>failed</code></td><td align="" colspan="" rowspan="">Target atomically commits an execution failure or deadline expiry.</td><td align="" colspan="" rowspan=""><code>failed</code></td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Any non-terminal state</td><td align="" colspan="" rowspan=""><code>cancelled</code></td><td align="" colspan="" rowspan="">Target atomically confirms cancellation.</td><td align="" colspan="" rowspan=""><code>cancelled</code></td></tr>
+    </table></figure>
+    <p class="" style="">Validation, rejection, queueing, startup, and caller-side timeouts are local conditions, not interoperable task states. A task exists only after durable acceptance. The permitted transitions are: <code>accepted</code> to <code>running</code>, <code>input_required</code>, <code>cancelling</code>, or any terminal state; <code>running</code> to <code>input_required</code>, <code>cancelling</code>, or any terminal state; <code>input_required</code> to <code>running</code>, <code>cancelling</code>, or any terminal state; and <code>cancelling</code> to any terminal state. Terminal states are immutable.</p>
+  </div>
+  <div class="indent"><h3 id="task-recovery">13.7 Task Recovery<a class="anchor-link" href="#task-recovery"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">A caller recovers state with IQ <code>get</code> containing <code>task-state-request</code> and retrieves a terminal result with a separate <code>task-result-request</code>.</p>
+    <ul class="" style="">
+      <li class="" style="">The target MUST authorize every operation against the caller bare JID.</li>
+      <li class="" style="">Syntactically invalid identifiers receive <code>bad-request</code>.</li>
+      <li class="" style="">Nonexistent, expired, unauthorized, and cross-tenant task IDs MUST all receive the same <code>item-not-found</code> condition and safe error payload.</li>
+      <li class="" style="">Those cases SHOULD use similar response timing and identical rate-limiting classes so they remain observationally equivalent.</li>
+    </ul>
+    <p class="" style=""><code>task-state</code> MUST return the target endpoint bare JID, exact API version and manifest hash, state, current global revision, creation and update times, retention deadline, and deadline if any. While input is pending it MUST include <code>pending-input media-type='application/json'</code> containing the complete <code>input_required</code> object. A terminal state MUST identify whether a retained result is available. <code>task-result</code> is valid only for a terminal task, returns the immutable terminal state and complete retained payload, and MUST fail with <code>unexpected-request</code> while non-terminal. Notifications are advisory; these two IQ operations are the recovery source of truth.</p>
+    <figure class="code-example" id="example-23"><figcaption><strong>Example 23.</strong> Caller recovers task state<a class="anchor-link" href="#example-23"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='planner@agents.example/worker'
+    to='weather@agents.example'
+    id='task-state-1'
+    type='get'&gt;
+  &lt;task-state-request xmlns='urn:xmpp:agent-task:0'
+                      task-id='task-7f2a9c41d8804e96bb478af6453c0371'/&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='planner@agents.example/worker'
+    id='task-state-1'
+    type='result'&gt;
+  &lt;task-state xmlns='urn:xmpp:agent-task:0'
+              task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+              endpoint='weather@agents.example'
+              state='running'
+              revision='2'
+              api-version='1.4.0'
+              created='2026-07-27T19:14:01Z'
+              updated='2026-07-27T19:14:03Z'
+              retain-until='2026-07-28T19:14:01Z'
+              result-available='false'&gt;
+    &lt;manifest-hash&gt;
+      &lt;hash xmlns='urn:xmpp:hashes:2' algo='sha-256'&gt;K2/YdwvIBAlfUIeZHiNCyiYA4m4W2wrEOqXQDoQyXp4=&lt;/hash&gt;
+    &lt;/manifest-hash&gt;
+  &lt;/task-state&gt;
+&lt;/iq&gt;
+</pre></figure>
+    <figure class="code-example" id="example-24"><figcaption><strong>Example 24.</strong> Caller retrieves the retained terminal result<a class="anchor-link" href="#example-24"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><pre class="prettyprint">
+&lt;iq from='planner@agents.example/phone'
+    to='weather@agents.example'
+    id='task-result-1'
+    type='get'&gt;
+  &lt;task-result-request xmlns='urn:xmpp:agent-task:0'
+                       task-id='task-7f2a9c41d8804e96bb478af6453c0371'/&gt;
+&lt;/iq&gt;
+
+&lt;iq from='weather@agents.example'
+    to='planner@agents.example/phone'
+    id='task-result-1'
+    type='result'&gt;
+  &lt;task-result xmlns='urn:xmpp:agent-task:0'
+               task-id='task-7f2a9c41d8804e96bb478af6453c0371'
+               state='completed'
+               revision='4'
+               media-type='application/json'&gt;
+    {"result":{"content":[{"type":"text","text":"Light rain, 18 C"}],
+               "structuredContent":{"summary":"Light rain, 18 C"},
+               "isError":false}}
+  &lt;/task-result&gt;
+&lt;/iq&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="task-message-routing">13.8 Message Routing, Storage, and Copies<a class="anchor-link" href="#task-message-routing"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">Caller commands and recovery IQs MUST be addressed to the target bare JID. The authorization principal is the caller bare JID. Best-effort event messages SHOULD be addressed to the full JID that issued <code>invoke</code>; after loss of that route the target MAY address notifications to the caller bare JID according to ordinary routing. Correctness MUST NOT depend on notification delivery to either route.</p>
+    <p class="" style="">Because bare-JID notification fallback is permitted, this profile MUST NOT use <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0334.html">Message Processing Hints (XEP-0334)</a></span>  [<a href="#nt-id76">14</a>] <code>no-copy</code>. A target MAY use <code>no-store</code> or <code>no-permanent-store</code> as a storage preference, but processing hints are never a correctness or confidentiality mechanism. Implementers MUST assume that carbons, archives, offline storage, and administrative logging can replicate task payloads. Events are deduplicated by <code>(target bare JID, task-id, revision)</code>, and an identical replay retains its event ID. Sensitive arguments or results SHOULD use an appropriate end-to-end encryption profile.</p>
+  </div>
+  <div class="indent"><h3 id="idempotency">13.9 Idempotency and Delegation<a class="anchor-link" href="#idempotency"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The wire <code>request-id</code> and replay fingerprint provide invocation idempotency. They are scoped to the authenticated caller bare JID and target bare JID and are not authentication secrets.</p>
+    <p class="" style="">The base protocol authenticates only the immediate stanza sender. It defines no signed delegation token, original-user assertion, approval grant, or chain-of-custody proof. A target MUST authorize the immediate authenticated sender. A local deployment MAY additionally enforce an original principal learned through trusted local context, but MUST NOT present that value to a remote peer as verifiable authority. Cross-domain on-behalf-of authorization is future work.</p>
+  </div>
+<h2 id="messaging">14.
+       Human Messaging Profile<a class="anchor-link" href="#messaging"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">This optional application profile remains in this document but is not part of Core Directory, Tool Discovery, or Task Execution conformance. An agent endpoint MAY participate in ordinary direct chats independently of tool execution. Groupchat participation requires the endpoint to implement and advertise the applicable <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0045.html">Multi-User Chat (XEP-0045)</a></span>  [<a href="#nt-id77">15</a>] behavior and is otherwise out of scope.</p>
+  <p class="" style="">A human or channel conversation is channel-owned: normal message routing selects the conversation session, and normal channel-delivery rules own the response. It MUST NOT be treated as a task merely because an agent or LLM produces the reply.</p>
+  <p class="" style="">A tool invocation remains task-owned even when its structured result contains natural-language text. It returns through the correlated task lifecycle and MUST NOT inherit a human channel's conversation session or delivery route merely because the result is prose.</p>
+  <p class="" style="">An endpoint participating in human messaging MUST advertise only the extensions it implements. The deployed profile uses:</p>
+  <ul class="" style="">
+    <li class="" style=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0085.html">Chat State Notifications (XEP-0085)</a></span>  [<a href="#nt-id78">16</a>] for chat state notifications;</li>
+    <li class="" style=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0184.html">Message Delivery Receipts  (XEP-0184)</a></span>  [<a href="#nt-id67">5</a>] for explicitly requested receipts on one-to-one chat messages, but not groupchat or task messages;</li>
+    <li class="" style=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0334.html">Message Processing Hints (XEP-0334)</a></span>  [<a href="#nt-id76">14</a>] <code>store</code> hints for one-to-one messages intended for offline delivery;</li>
+    <li class="" style=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0359.html">Unique and Stable Stanza IDs (XEP-0359)</a></span>  [<a href="#nt-id79">17</a>] origin IDs for stable message correlation;</li>
+    <li class="" style=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0461.html">Message Replies (XEP-0461)</a></span>  [<a href="#nt-id80">18</a>] for replies;</li>
+    <li class="" style=""><span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0004.html">Data Forms (XEP-0004)</a></span>  [<a href="#nt-id72">10</a>] for structured questions requiring a human response; and</li>
+    <li class="" style="">standard XMPP presence subscription and probe behavior for virtual endpoint JIDs.</li>
+  </ul>
+  <p class="" style="">A gateway MUST keep human conversations separate from task execution state and MUST keep task correlation separate from channel destinations. Application output cannot choose its transport path.</p>
+  <p class="" style="">An application MAY persist an authenticated requester's reply route with a durable task and, after completion, deliver the target's response from the target endpoint JID. In such a flow the calling agent supplies an instruction, not text authored on the target's behalf; the target authors its own response; the runtime delivers that response without asking the caller to repeat it; and the caller receives only delivery status and can acknowledge naturally. This application behavior does not change the base task result route and MUST obey recipient consent, blocking, provenance, and deduplication policy.</p>
+<h2 id="errors">15.
+       Error Handling<a class="anchor-link" href="#errors"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">An IQ <code>get</code> or <code>set</code> that is not handled MUST receive an IQ error as required by XMPP Core. The original request payload MAY be included only when it is safe and within the stanza-size limit; a responder SHOULD omit or truncate attacker-controlled JSON to prevent reflection amplification and secret disclosure.</p>
+  <figure class="table"><figcaption id="table-10"><strong>Table 10:</strong> Recommended stanza errors<a class="anchor-link" href="#table-10"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+    <tr class="body"><th colspan="" rowspan="">Condition</th><th colspan="" rowspan="">Use</th></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>bad-request</code></td><td align="" colspan="" rowspan="">Malformed JSON, missing attributes, invalid tool name, or invalid endpoint identifier.</td></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>forbidden</code></td><td align="" colspan="" rowspan="">Registration for another JID or a denied operation where existence disclosure is acceptable.</td></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>item-not-found</code></td><td align="" colspan="" rowspan="">Unknown, hidden, expired, or unauthorized endpoint, tool, version, schema, task, or input request.</td></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>not-acceptable</code></td><td align="" colspan="" rowspan="">Unsupported manifest version, schema mismatch, failed JSON Schema validation, or expired deadline.</td></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>conflict</code></td><td align="" colspan="" rowspan="">Conflicting registration or conflicting terminal task event.</td></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>resource-constraint</code></td><td align="" colspan="" rowspan="">Manifest or schema too large, too many pending IQs, task capacity exhausted, or rate limit reached.</td></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>service-unavailable</code></td><td align="" colspan="" rowspan="">The addressed protocol, endpoint runtime, or optional feature is unavailable.</td></tr>
+  </table></figure>
+  <p class="" style="">To avoid cross-principal enumeration, a gateway MUST return <code>item-not-found</code> for an endpoint or task that exists but is not visible or authorized to the requester, using the same safe error payload as a nonexistent object.</p>
+  <p class="" style="">Execution failures after task acceptance MUST use a <code>failed</code> lifecycle event with a stable application error code, a safe human-readable message, and a <code>retryable</code> boolean. Error messages MUST NOT expose secrets, internal prompts, stack traces, or data belonging to another principal.</p>
+  <figure class="table"><figcaption id="table-11"><strong>Table 11:</strong> Reserved task failure codes<a class="anchor-link" href="#table-11"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+    <tr class="body"><th colspan="" rowspan="">Code</th><th colspan="" rowspan="">Meaning</th></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>deadline-expired</code></td><td align="" colspan="" rowspan="">The deadline elapsed before a successful terminal result.</td></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>internal-error</code></td><td align="" colspan="" rowspan="">The target failed because of an unexpected internal condition.</td></tr>
+    <tr class="body"><td align="" colspan="" rowspan=""><code>unavailable</code></td><td align="" colspan="" rowspan="">A required runtime or downstream service is temporarily unavailable.</td></tr>
+  </table></figure>
+  <p class="" style="">These codes are reserved by this specification; no new central registry is created. A deployment-defined code MUST be namespace-qualified, for example <code>com.example.weather:quota-exceeded</code>. Pre-admission argument, permission, version, manifest-hash, and replay failures use IQ errors and are not task failure codes.</p>
+<h2 id="rules">16.
+       Business Rules<a class="anchor-link" href="#rules"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <ul class="" style="">
+    <li class="" style="">A self-registered manifest JID MUST match the authenticated C2S principal; virtual endpoints require trusted administrative provisioning.</li>
+    <li class="" style="">An endpoint API version is immutable, and every tool list, tool query, schema request, invocation, task state, and result MUST remain pinned to its exact manifest.</li>
+    <li class="" style="">Directory visibility and invocation permission are separate decisions. Visible does not imply invocable.</li>
+    <li class="" style="">Search, directory items, endpoint information, tool information, and schema retrieval MUST each apply the relevant visibility policy.</li>
+    <li class="" style="">A caller gateway MAY prevalidate invocation arguments; the target MUST validate them against the authoritative registered schema. A caller SHOULD validate structured results on return.</li>
+    <li class="" style="">The target MUST be the only principal allowed to report progress or settle its task.</li>
+    <li class="" style="">An authorized resource of the immediate caller bare JID MUST be the only principal allowed to answer requested input, request cancellation, or recover state and results.</li>
+    <li class="" style="">Terminal states are immutable, except that an identical repeated terminal event MAY be treated as an idempotent replay.</li>
+    <li class="" style="">Approval-required or permission-bearing tools MUST fail closed until the gateway has an enforceable grant.</li>
+    <li class="" style="">Endpoint and tool annotations MUST be treated as untrusted metadata.</li>
+    <li class="" style="">A gateway MUST bound manifest size, schema size, result size, pending IQ count, task count, task duration, task-state retention, directory result count, and delegation depth.</li>
+  </ul>
+<h2 id="impl">17.
+       Implementation Appendix<a class="anchor-link" href="#impl"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">This section is informative. It records implementation guidance, MCP mapping, caching behavior, and deployed predecessor status separately from the normative protocol definition.</p>
+  <div class="indent"><h3 id="model-boundary">17.1 Gateway and Model Boundary<a class="anchor-link" href="#model-boundary"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">This subsection is informative. The XMPP gateway is the protocol endpoint; an LLM, provider runtime, or tool implementation need not parse or generate XMPP stanzas, JIDs, namespace identifiers, tenant identifiers, or delivery envelopes. A useful implementation presents a transport-neutral contract containing the selected tool name, validated arguments, safe tool metadata, and only the event data needed to perform the work. Opaque endpoint and task handles reduce accidental transport disclosure.</p>
+    <p class="" style="">After wire validation, a target gateway can dispatch a task to an internal agent or model runtime. Task-scoped provider state should remain separate from ordinary channel conversation state. An action runtime can report completion, failure, progress, input requests, or cancellation through a transport-neutral action bound to the current task; the gateway then applies the state transition and constructs the authorized stanza.</p>
+    <p class="" style="">These architectural techniques do not replace the authorization invariants in <a href="#security">Security Considerations</a>. In particular, application output cannot select a wire sender, authenticated caller, tenant, unrelated task, or unauthorized destination.</p>
+  </div>
+  <div class="indent"><h3 id="mcp-mapping">17.2 MCP Mapping<a class="anchor-link" href="#mcp-mapping"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <figure class="table"><figcaption id="table-12"><strong>Table 12:</strong> MCP to XMPP agent protocol mapping<a class="anchor-link" href="#table-12"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">MCP concept</th><th colspan="" rowspan="">XMPP representation</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Server identity</td><td align="" colspan="" rowspan="">Endpoint bare JID.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Implementation name and version</td><td align="" colspan="" rowspan="">Distinct <code>implementation</code> manifest object; not the endpoint API version.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">MCP protocol revision</td><td align="" colspan="" rowspan="">Optional <code>mcpProtocolVersion</code>; not the manifest model version.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>tools/list</code></td><td align="" colspan="" rowspan="">Version-pinned <code>disco#items</code> tool collection followed by tool information queries.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>Tool</code></td><td align="" colspan="" rowspan="">Tool item, tool information form, and separately retrievable schemas.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>Tool.execution</code></td><td align="" colspan="" rowspan="">Preserved with MCP <code>taskSupport</code> semantics; XMPP hints use the <code>urn:xmpp:agent-api:0</code> extension object.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>tools/call</code></td><td align="" colspan="" rowspan="">IQ <code>invoke</code>, asynchronous notifications, and state/result recovery.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>CallToolResult</code></td><td align="" colspan="" rowspan="">The complete object is preserved as terminal <code>result</code>.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>CallToolResult.isError=true</code></td><td align="" colspan="" rowspan="">A completed tool result, not an XMPP task-infrastructure failure.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>_meta</code> and annotations</td><td align="" colspan="" rowspan="">Preserved where representable; unknown metadata MUST NOT affect authorization.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Progress notification</td><td align="" colspan="" rowspan=""><code>progress</code> event.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Elicitation or human input</td><td align="" colspan="" rowspan=""><code>input_required</code> notification and <code>provide-input</code> IQ; this is not a transparent MCP elicitation tunnel.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Authorization</td><td align="" colspan="" rowspan="">XMPP-authenticated principals plus gateway policy; HTTP OAuth tokens are not forwarded.</td></tr>
+    </table></figure>
+    <p class="" style="">MCP clients connected through a bridge SHOULD receive normal MCP tool objects. A bridge MUST preserve schemas, annotations, <code>execution</code>, <code>content</code>, <code>structuredContent</code>, <code>isError</code>, and <code>_meta</code> where representable; preserve MCP tool-list cursors internally; and report semantic loss when either side cannot represent a capability. The XMPP directory RSM cursor is not an MCP tool-list cursor.</p>
+    <p class="" style=""><a href="https://modelcontextprotocol.io/specification/2025-11-25">MCP 2025-11-25</a> Tasks are experimental and not wire-identical to this protocol. Several detailed XMPP non-terminal states map to MCP <code>working</code>; MCP <code>working</code> cannot be expanded back into a more specific XMPP state without bridge-owned knowledge. MCP TTL is measured in milliseconds from task creation, while this protocol advertises an absolute retention deadline covering the task result. Receiver-generated task IDs, creation responses, polling, result retrieval, and cancellation MUST be represented explicitly in a bridge-loss table. A bridge MUST NOT claim transparent MCP Tasks support when any of these semantics are lost.</p>
+  </div>
+  <div class="indent"><h3 id="caching">17.3 Caching and Change Notification<a class="anchor-link" href="#caching"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">Clients MAY cache manifests, endpoint information, tool information, and schemas by endpoint bare JID, exact API version, <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] hash, authenticated principal, and a trusted local visibility-scope identifier. Cache entries MUST NOT cross principals or authorization scopes unless policy proves the returned view is identical. Because manifests are immutable and all-or-nothing, a matching version and hash identifies the same registered content. A future extension can define push notification for active-version changes; the base protocol requires clients to rediscover.</p>
+  </div>
+  <div class="indent"><h3 id="canonical-json">17.4 Canonical JSON<a class="anchor-link" href="#canonical-json"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The standards profile uses RFC 8785 canonicalization and <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0300.html">Use of Cryptographic Hash Functions in XMPP (XEP-0300)</a></span>  [<a href="#nt-id71">9</a>] hashes. The deployed private profile used a simpler key-sorting algorithm; its values are comparable only within that profile. A client that cannot reproduce the declared canonicalization MAY treat a hash as an opaque cache validator but MUST still validate received JSON and schema content.</p>
+  </div>
+  <div class="indent"><h3 id="implementation-status">17.5 Implementation Status and Known Differences<a class="anchor-link" href="#implementation-status"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The implementation on which this draft is based has been integration-tested with Openfire. This is evidence from one gateway implementation against an XMPP server, not a claim of interoperability between two independent implementations of this protocol.</p>
+    <figure class="table"><figcaption id="table-13"><strong>Table 13:</strong> Implementation and protocol status<a class="anchor-link" href="#table-13"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">Capability</th><th colspan="" rowspan="">Deployed predecessor</th><th colspan="" rowspan="">Version 0 design</th><th colspan="" rowspan="">Independent interoperability test</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">External-component hosting and endpoint discovery</td><td align="" colspan="" rowspan="">Yes</td><td align="" colspan="" rowspan="">Required by applicable profile</td><td align="" colspan="" rowspan="">No</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Directory and search</td><td align="" colspan="" rowspan="">Yes, without complete RSM</td><td align="" colspan="" rowspan="">Visibility-scoped RSM</td><td align="" colspan="" rowspan="">No</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Immutable manifest retrieval and activation</td><td align="" colspan="" rowspan="">No</td><td align="" colspan="" rowspan="">Defined</td><td align="" colspan="" rowspan="">No</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Version-pinned schemas and tools</td><td align="" colspan="" rowspan="">Partial</td><td align="" colspan="" rowspan="">Defined</td><td align="" colspan="" rowspan="">No</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">IQ durable task admission</td><td align="" colspan="" rowspan="">No</td><td align="" colspan="" rowspan="">Defined</td><td align="" colspan="" rowspan="">No</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Progress, input, cancellation, and settlement</td><td align="" colspan="" rowspan="">Yes, private message profile</td><td align="" colspan="" rowspan="">Revisioned notifications plus IQ commands</td><td align="" colspan="" rowspan="">No</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Complete state and result recovery</td><td align="" colspan="" rowspan="">No</td><td align="" colspan="" rowspan="">Defined</td><td align="" colspan="" rowspan="">No</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Full JSON Schema 2020-12 evaluation</td><td align="" colspan="" rowspan="">No</td><td align="" colspan="" rowspan="">Required</td><td align="" colspan="" rowspan="">No</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan="">Human messaging and requester delivery</td><td align="" colspan="" rowspan="">Yes</td><td align="" colspan="" rowspan="">Optional application profile</td><td align="" colspan="" rowspan="">No</td></tr>
+    </table></figure>
+    <p class="" style="">The deployed runtime enforces the gateway/model boundary described above. Model-facing discovery returns opaque <code>agent:</code> handles rather than XMPP endpoint identifiers. Inbound agent tasks are formatted as transport-neutral tool, argument, and event data; wire JIDs, component domains, tenant and workspace routing, endpoint addresses, and stanza correlation remain host-owned. Action tasks run in task-scoped sessions and settle only through explicit task actions; provider final prose cannot escape through a human channel.</p>
+    <p class="" style="">The deployed application defines a local tool named <code>conversation.respond</code>. This is an application convention, not a well-known name or interoperable feature defined by this specification. It uses the durable task transport, while the runtime converts the target's non-empty prose into the application's declared structured result. Implementations using that name remain responsible for publishing and versioning their own schemas and result-size limits.</p>
+    <p class="" style="">The deployed caller API additionally supports a local <code>delivery="requester"</code> policy for that application tool. It resolves the active XMPP requester route from session state, persists it with the task, sends the completed response through the channel adapter with the target endpoint JID as sender identity, records delivery state, and returns that outcome to the calling agent. This policy has no representation or negotiation in the protocol defined by this document and is therefore not part of conformance.</p>
+    <p class="" style="">The deployed direct-delivery path currently sends an ordinary chat message without a standardized indication that another agent initiated the interaction. It also has at-least-once semantics: a crash after network send but before committing the delivery marker can expose the same response to the human twice. A future interoperable delivery profile needs explicit provenance, recipient-consent and blocking behavior, and end-to-end acknowledgement or deduplication.</p>
+    <p class="" style="">The following normative requirements deliberately harden or extend the deployed implementation and therefore identify implementation work needed for full conformance:</p>
+    <ul class="" style="">
+      <li class="" style="">the root directory and Jabber Search currently expose a public cross-tenant identity view, while an explicit directory-node query is tenant-scoped; a conforming deployment needs one explicit and consistently applied visibility policy;</li>
+      <li class="" style="">remote invocation parsing currently accepts the <code>caller</code> and tenant context carried in the payload; a conforming gateway must bind the caller to the authenticated stanza sender and derive tenant context from trusted server-side policy;</li>
+      <li class="" style="">the current JSON validator implements a useful subset of JSON Schema constraints rather than complete JSON Schema 2020-12 evaluation;</li>
+      <li class="" style="">permission-bearing and approval-required tools currently fail closed but do not yet consume a portable authorization grant;</li>
+      <li class="" style="">the manifest model stores <code>openWorldHint</code>, but the deployed tool information form does not yet emit <code>open_world</code>; and</li>
+      <li class="" style="">the deployed private wire profile uses <code>xmpp+mcp</code> endpoint identifiers, MCP-prefixed endpoint feature and form identifiers, namespace-valued <code>specVersion</code>, volatile availability in the endpoint form, the same <code>schema</code> element for requests and results, and a pre-RFC-8785 digest algorithm; these wire identifiers are translated to opaque handles before model-facing use;</li>
+      <li class="" style="">the deployed protocol has no immutable manifest retrieval, active-version operation, IQ admission, receiver-generated task IDs, global event revisions, or complete task state and result queries; and</li>
+      <li class="" style="">the deployed protocol has no directory paging, registration expiry, or tool-list change notification.</li>
+    </ul>
+    <p class="" style="">These differences distinguish deployed predecessor behavior from requirements that must be completed before an implementation claims conformance to this ProtoXEP.</p>
+  </div>
+<h2 id="future">18.
+       Future Extensions<a class="anchor-link" href="#future"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">The following work is intentionally left for later namespace versions or separate XEPs:</p>
+  <ul class="" style="">
+    <li class="" style="">verifiable original-principal delegation and parent-task ancestry on the wire;</li>
+    <li class="" style="">manifest expiry, lease renewal, and signed manifests;</li>
+    <li class="" style="">push notification when manifests or tool lists change;</li>
+    <li class="" style="">standardized authorization scopes, signed approval grants, and delegation tokens;</li>
+    <li class="" style="">discovery and transport for MCP resources, prompts, sampling, roots, and logging;</li>
+    <li class="" style="">binary and file inputs using existing XMPP file-sharing protocols;</li>
+    <li class="" style="">end-to-end encryption and signing profiles for task payloads;</li>
+    <li class="" style="">federated gateway-to-gateway trust and policy discovery;</li>
+    <li class="" style="">result streaming and resumable event history.</li>
+  </ul>
+<h2 id="access">19.
+       Accessibility Considerations<a class="anchor-link" href="#access"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">Agent, tool, question, progress, error, and approval interfaces SHOULD expose text labels to assistive technology and SHOULD NOT rely solely on color, icons, animation, or presence state. Clients SHOULD show the endpoint JID in addition to a display title so that users can distinguish look-alike agents.</p>
+  <p class="" style="">Interactive input forms SHOULD use specific field types, labels, descriptions, validation errors, and deterministic focus order. Progress percentages SHOULD be accompanied by textual stages when available. Clients SHOULD allow users to review full tool arguments and the declared side-effect hints before approval.</p>
+<h2 id="i18n">20.
+       Internationalization Considerations<a class="anchor-link" href="#i18n"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">JIDs MUST be prepared and compared according to the applicable XMPP address rules. Human-readable titles, descriptions, instructions, questions, summaries, and errors SHOULD carry or inherit <code>xml:lang</code> where they are represented as XML text. JSON manifest text is not language-tagged in this version; implementations that localize it SHOULD select a locale through deployment policy and MUST retain stable non-localized names for matching and invocation.</p>
+  <p class="" style="">Search matching SHOULD use locale-appropriate Unicode case handling. Implementations MUST NOT use locale-dependent matching for authorization, JID comparison, tool names, versions, hashes, request IDs, or task IDs.</p>
+<h2 id="security">21.
+       Security Considerations<a class="anchor-link" href="#security"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">Tool invocation can produce arbitrary external side effects. Implementations MUST authenticate the XMPP sender, authorize every tool call, validate all inputs, and fail closed. Discovery metadata and MCP annotations are not authority. Destructive tools SHOULD require an explicit grant or human approval appropriate to the deployment.</p>
+  <p class="" style="">A gateway MUST prevent sender spoofing when acting for virtual endpoint JIDs. Self-registration MUST prove control of the endpoint JID; administrative provisioning MUST authenticate and authorize the administrator. Tenant and workspace identifiers are deployment-local context and are not base-protocol identity assertions.</p>
+  <p class="" style="">JSON parsing, JSON Schema evaluation, regular-expression evaluation, and XML parsing are attacker-controlled surfaces. Implementations MUST bound nesting, size, execution time, pending work, identifier length, and schema complexity. External <code>$ref</code> resolution MUST be disabled by default and MAY be enabled only with an explicit allowlist and resource budget. XML parsers MUST disable unsafe external entity resolution for protocol payloads.</p>
+  <p class="" style="">Schema hashes provide change detection, not signer authentication. A hash received from the same untrusted source as the schema does not make the schema trustworthy. Signed manifests and a trust model are future work.</p>
+  <p class="" style="">Request IDs, task IDs, and event IDs MUST satisfy the identifier grammar and 128-bit unpredictability requirement in <a href="#invocation">Invocation</a>. Knowledge of an identifier MUST NOT grant access. Task lookup, cancellation, input, and results MUST all authorize the immediate caller bare JID. Unknown, expired, and unauthorized lookups MUST be indistinguishable.</p>
+  <p class="" style="">Gateways MUST rate-limit registration, directory enumeration, search, schema retrieval, invocation, progress events, input requests, and result sizes. Cold-start support is especially susceptible to resource exhaustion and SHOULD have quotas and concurrency limits.</p>
+  <p class="" style="">Task retries are dangerous. Stream loss, IQ timeout, and missing progress do not prove non-execution. A caller MUST retry the identical request ID and fingerprint or use task-specific reconciliation; it MUST NOT create a fresh side-effecting request merely because admission was not observed.</p>
+  <p class="" style="">Component secrets, OAuth tokens, API keys, cookies, and other credentials MUST NOT appear in manifests, discovery forms, ordinary chat bodies, task context, progress, or error text. A gateway bridging to MCP over HTTP MUST NOT pass through a caller token to a downstream service unless an explicit secure token-exchange design permits it.</p>
+  <p class="" style="">Tool descriptions, schemas, arguments, results, and input questions are untrusted content and can contain prompt-injection instructions. A gateway or agent MUST NOT treat such content as policy, authorization, or operator instruction. Tool output MUST remain data until an explicitly authorized application interprets it.</p>
+  <p class="" style="">Version 0 defines no portable approval token. A future approval profile must cryptographically bind a grant to the caller, endpoint, tool, immutable manifest, exact canonical arguments or an explicitly bounded argument scope, expiry, nonce or request ID, and intended side effect. Interactive input alone is not such a grant.</p>
+  <p class="" style="">An LLM is not an XMPP security principal. Hiding transport identifiers from the model reduces accidental disclosure but does not replace authorization. The gateway MUST bind every model-facing opaque endpoint handle and task handle to server-side identity and tenant state, reject stale or cross-context handles, and construct all wire addresses itself. Model-generated destination markup or identity claims MUST be ignored for task delivery.</p>
+  <p class="" style="">A server or component MUST originate a stanza from a virtual target JID only when it is authorized to act for that endpoint. A caller gateway MUST NOT spoof a remote target JID; cross-domain sending from the target requires the target gateway or a future explicit delegation protocol.</p>
+  <p class="" style="">An implementation that performs application-specific direct delivery of a task result to a human MUST establish recipient consent, either explicitly or through a documented closed-deployment policy, and MUST honor <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0191.html">Blocking Command (XEP-0191)</a></span>  [<a href="#nt-id81">19</a>] blocking and applicable presence or messaging policy. It SHOULD attach provenance with <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0461.html">Message Replies (XEP-0461)</a></span>  [<a href="#nt-id80">18</a>] when the triggering message is known so a client can render the relationship to the initiating conversation. Without an end-to-end acknowledgement or deduplication profile, such human-visible delivery has at-least-once semantics: a crash after network send but before local commit can expose the same response twice.</p>
+  <p class="" style="">Gateways are confused-deputy targets. The base protocol authorizes the immediate authenticated XMPP sender for the selected endpoint, exact tool, immutable manifest, canonical arguments, and intended side effect. It cannot prove an original principal across an agent chain. A local original-user identity, delegation ancestry, trusted agent name, or prior approval for another call MUST NOT confer remote authority without a future verifiable delegation or approval grant.</p>
+  <p class="" style="">Federated discovery, registration, and invocation MUST be denied by default unless an operator explicitly enables the remote domain or principal. Allowlists SHOULD be scoped separately for visibility and invocation. Display names and localparts are subject to name squatting and visual impersonation; clients SHOULD emphasize the normalized endpoint JID and security context.</p>
+<h2 id="privacy">22.
+       Privacy Considerations<a class="anchor-link" href="#privacy"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">Directory listing and search can reveal the existence, names, functions, vendors, versions, and availability of agents. Tool descriptions and schemas can reveal internal business processes. Gateways MUST apply an explicit visibility policy and SHOULD reveal the minimum data necessary to unauthorized or anonymous requesters.</p>
+  <p class="" style="">Task arguments, results, progress, input requests, caller JIDs, workspace identifiers, and task ancestry can contain personal or confidential data. Implementations SHOULD define retention limits, access logging, deletion behavior, and encryption appropriate to their threat model. Operator logs MUST redact secrets and SHOULD avoid full task payloads.</p>
+  <p class="" style="">An application that persists an out-of-band conversation route with a task links the requester, caller agent, target agent, channel, and thread. Such a routing record SHOULD contain only the fields needed for delivery, MUST receive the same access control as the task, and SHOULD be deleted or minimized according to the task-retention policy.</p>
+  <p class="" style="">Public profile data, tenant-scoped API metadata, and invocation authorization are distinct policy surfaces. Publishing a vCard or directory item MUST NOT make private tools or schemas public and MUST NOT imply invocation permission.</p>
+  <p class="" style="">Task notification messages can be copied by <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0280.html">Message Carbons (XEP-0280)</a></span>  [<a href="#nt-id82">20</a>], archived by <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0313.html">Message Archive Management (XEP-0313)</a></span>  [<a href="#nt-id83">21</a>], retained in offline storage, and exposed to server operators in plaintext unless an end-to-end encryption profile is used. Task IQ payloads are likewise visible to routing servers and administrative logging. Deployments MUST document those replication and retention paths. Responses for hidden and nonexistent endpoints SHOULD be similar in timing, and equivalent rate limits SHOULD apply, to reduce directory-enumeration side channels.</p>
+<h2 id="iana">23.
+       IANA Considerations<a class="anchor-link" href="#iana"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">This document requires no interaction with the Internet Assigned Numbers Authority.</p>
+<h2 id="registrar">24.
+       XMPP Registrar Considerations<a class="anchor-link" href="#registrar"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <div class="indent"><h3 id="registrar-namespaces">24.1 Protocol Namespaces<a class="anchor-link" href="#registrar-namespaces"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The XMPP Registrar shall register the XML protocol namespaces <code>urn:xmpp:agent-api:0</code> and <code>urn:xmpp:agent-task:0</code>. FORM_TYPE values, feature vars, and discovery nodes are not XML protocol namespaces.</p>
+  </div>
+  <div class="indent"><h3 id="registrar-identities">24.2 Service Discovery Identities<a class="anchor-link" href="#registrar-identities"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The XMPP Registrar shall add the following types to the <code>automation</code> category:</p>
+    <figure class="table"><figcaption id="table-14"><strong>Table 14:</strong> Service discovery identity registrations<a class="anchor-link" href="#table-14"><abbr title="Link to this point in the document">¶</abbr></a></figcaption><table>
+      <tr class="body"><th colspan="" rowspan="">Type</th><th colspan="" rowspan="">Description</th></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent-gateway</code></td><td align="" colspan="" rowspan="">A service that hosts, discovers, and routes for addressable AI agents.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent-directory</code></td><td align="" colspan="" rowspan="">A visibility-scoped directory of addressable agent endpoints.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent-endpoint</code></td><td align="" colspan="" rowspan="">An addressable agent endpoint exposing callable tools.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent-tool-collection</code></td><td align="" colspan="" rowspan="">A version-pinned collection of tools exposed by an agent endpoint.</td></tr>
+      <tr class="body"><td align="" colspan="" rowspan=""><code>agent-tool</code></td><td align="" colspan="" rowspan="">A discovery node representing one callable agent tool.</td></tr>
+    </table></figure>
+  </div>
+  <div class="indent"><h3 id="registrar-features">24.3 Service Discovery Features<a class="anchor-link" href="#registrar-features"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The XMPP Registrar shall register the fixed feature vars <code>urn:xmpp:agent-directory:0</code>, <code>urn:xmpp:agent-endpoint:0</code>, <code>urn:xmpp:agent-tool:0</code>, <code>urn:xmpp:agent-api:0#manifest</code>, <code>urn:xmpp:agent-api:0#schema</code>, <code>urn:xmpp:agent-api:0#self-register</code>, <code>urn:xmpp:agent-api:0#admin</code>, <code>urn:xmpp:agent-task:0</code>, <code>urn:xmpp:agent-task:0#progress</code>, <code>urn:xmpp:agent-task:0#cancel</code>, and <code>urn:xmpp:agent-task:0#input</code>, with the semantics defined by this document.</p>
+  </div>
+  <div class="indent"><h3 id="registrar-formtypes">24.4 Data Form Types<a class="anchor-link" href="#registrar-formtypes"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The XMPP Registrar shall register the following field standardizations in accordance with <span class="ref" style=""><a href="https://xmpp.org/extensions/xep-0068.html">Field Standardization for Data Forms (XEP-0068)</a></span>  [<a href="#nt-id84">22</a>]:</p>
+    <figure class="code"><figcaption>Endpoint information form registration</figcaption><pre class="prettyprint">
+&lt;form_type&gt;
+  &lt;name&gt;urn:xmpp:agent-endpoint-info:0&lt;/name&gt;
+  &lt;doc&gt;XEP-XXXX&lt;/doc&gt;
+  &lt;desc&gt;Information about an XMPP agent endpoint.&lt;/desc&gt;
+  &lt;field var='server_name' type='text-single' label='Stable endpoint name'/&gt;
+  &lt;field var='server_title' type='text-single' label='Display title'/&gt;
+  &lt;field var='description' type='text-multi' label='Description'/&gt;
+  &lt;field var='version' type='text-single' label='Active API version'/&gt;
+  &lt;field var='manifest_hash_algo' type='text-single' label='Manifest hash algorithm'/&gt;
+  &lt;field var='manifest_hash_value' type='text-single' label='Base64 manifest hash'/&gt;
+  &lt;field var='cold_start_supported' type='boolean' label='Cold start supported'/&gt;
+  &lt;field var='request_replay_seconds' type='text-single' label='Minimum request replay window in seconds'/&gt;
+&lt;/form_type&gt;
+</pre></figure>
+    <figure class="code"><figcaption>Tool information form registration</figcaption><pre class="prettyprint">
+&lt;form_type&gt;
+  &lt;name&gt;urn:xmpp:agent-tool-info:0&lt;/name&gt;
+  &lt;doc&gt;XEP-XXXX&lt;/doc&gt;
+  &lt;desc&gt;Information about one version-pinned XMPP agent tool.&lt;/desc&gt;
+  &lt;field var='name' type='text-single' label='Tool name'/&gt;
+  &lt;field var='title' type='text-single' label='Display title'/&gt;
+  &lt;field var='description' type='text-multi' label='Description'/&gt;
+  &lt;field var='api_version' type='text-single' label='Endpoint API version'/&gt;
+  &lt;field var='input_schema_hash_algo' type='text-single' label='Input schema hash algorithm'/&gt;
+  &lt;field var='input_schema_hash_value' type='text-single' label='Base64 input schema hash'/&gt;
+  &lt;field var='output_schema_hash_algo' type='text-single' label='Output schema hash algorithm'/&gt;
+  &lt;field var='output_schema_hash_value' type='text-single' label='Base64 output schema hash'/&gt;
+  &lt;field var='read_only' type='boolean' label='MCP read-only hint'/&gt;
+  &lt;field var='destructive' type='boolean' label='MCP destructive hint'/&gt;
+  &lt;field var='idempotent' type='boolean' label='MCP idempotent hint'/&gt;
+  &lt;field var='open_world' type='boolean' label='MCP open-world hint'/&gt;
+&lt;/form_type&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="registrar-nodes">24.5 Service Discovery Nodes<a class="anchor-link" href="#registrar-nodes"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">The XMPP Registrar shall register fixed node <code>urn:xmpp:agent-directory:0</code> and derived-node bases <code>urn:xmpp:agent-tools:0</code> and <code>urn:xmpp:agent-tool:0</code>. Derived tool collection nodes and tool nodes follow the exact grammar in <a href="#namespaces">Protocol Namespaces and Identifiers</a>; they are discovery node identifiers, not XML namespaces.</p>
+  </div>
+  <div class="indent"><h3 id="registrar-failure-codes">24.6 Task Failure Codes<a class="anchor-link" href="#registrar-failure-codes"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <p class="" style="">This document creates no failure-code registry. It reserves the unqualified codes listed in <a href="#errors">Error Handling</a>. Extensions use namespace-qualified codes, avoiding a central collision registry.</p>
+  </div>
+<h2 id="schema">25.
+       XML Schema<a class="anchor-link" href="#schema"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">The following schemas are normative for the base XML structures. Implementations MUST also enforce the state, hashing, JSON validation, extension, and authorization rules that XML Schema cannot express.</p>
+  <div class="indent"><h3 id="schema-agent-api">25.1 Agent API Schema<a class="anchor-link" href="#schema-agent-api"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <figure class="code"><figcaption>Schema for urn:xmpp:agent-api:0</figcaption><pre class="prettyprint">&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+&lt;xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'
+           targetNamespace='urn:xmpp:agent-api:0'
+           xmlns='urn:xmpp:agent-api:0'
+           elementFormDefault='qualified'&gt;
+
+  &lt;xs:simpleType name='version'&gt;
+    &lt;xs:restriction base='xs:string'&gt;
+      &lt;xs:pattern value='[A-Za-z0-9._~-]{1,64}'/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+
+  &lt;xs:simpleType name='toolName'&gt;
+    &lt;xs:restriction base='xs:string'&gt;
+      &lt;xs:minLength value='1'/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+
+  &lt;xs:simpleType name='direction'&gt;
+    &lt;xs:restriction base='xs:string'&gt;
+      &lt;xs:enumeration value='input'/&gt;
+      &lt;xs:enumeration value='output'/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+
+  &lt;xs:complexType name='hashContainer'&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:any namespace='urn:xmpp:hashes:2'
+              minOccurs='1' maxOccurs='1' processContents='lax'/&gt;
+    &lt;/xs:sequence&gt;
+  &lt;/xs:complexType&gt;
+
+  &lt;xs:element name='register'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name='manifest'&gt;
+          &lt;xs:complexType&gt;
+            &lt;xs:simpleContent&gt;
+              &lt;xs:extension base='xs:string'&gt;
+                &lt;xs:attribute name='media-type' type='xs:string'
+                              use='required' fixed='application/json'/&gt;
+              &lt;/xs:extension&gt;
+            &lt;/xs:simpleContent&gt;
+          &lt;/xs:complexType&gt;
+        &lt;/xs:element&gt;
+      &lt;/xs:sequence&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='registered'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:any namespace='urn:xmpp:hashes:2'
+                minOccurs='1' maxOccurs='1' processContents='lax'/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='jid' type='xs:string' use='required'/&gt;
+      &lt;xs:attribute name='version' type='version' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='activate'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:any namespace='urn:xmpp:hashes:2'
+                minOccurs='1' maxOccurs='1' processContents='lax'/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='jid' type='xs:string' use='required'/&gt;
+      &lt;xs:attribute name='version' type='version' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='active'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:attribute name='jid' type='xs:string' use='required'/&gt;
+      &lt;xs:attribute name='version' type='version' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:complexType name='endpointOperation'&gt;
+    &lt;xs:attribute name='jid' type='xs:string' use='required'/&gt;
+  &lt;/xs:complexType&gt;
+
+  &lt;xs:element name='deactivate' type='endpointOperation'/&gt;
+  &lt;xs:element name='deactivated' type='endpointOperation'/&gt;
+  &lt;xs:element name='registration-status' type='endpointOperation'/&gt;
+  &lt;xs:element name='remove-endpoint' type='endpointOperation'/&gt;
+
+  &lt;xs:element name='remove-version'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:attribute name='jid' type='xs:string' use='required'/&gt;
+      &lt;xs:attribute name='version' type='version' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='removed'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:attribute name='jid' type='xs:string' use='required'/&gt;
+      &lt;xs:attribute name='version' type='version' use='optional'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='registration'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name='version' minOccurs='0' maxOccurs='unbounded'&gt;
+          &lt;xs:complexType&gt;
+            &lt;xs:sequence&gt;
+              &lt;xs:any namespace='urn:xmpp:hashes:2'
+                      minOccurs='1' maxOccurs='1' processContents='lax'/&gt;
+            &lt;/xs:sequence&gt;
+            &lt;xs:attribute name='id' type='version' use='required'/&gt;
+            &lt;xs:attribute name='active' type='xs:boolean' use='required'/&gt;
+            &lt;xs:attribute name='removable' type='xs:boolean' use='required'/&gt;
+          &lt;/xs:complexType&gt;
+        &lt;/xs:element&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='jid' type='xs:string' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='manifest-request'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:attribute name='version' type='version' use='optional'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='manifest'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:any namespace='urn:xmpp:hashes:2'
+                minOccurs='1' maxOccurs='1' processContents='lax'/&gt;
+        &lt;xs:element name='json' type='xs:string'/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='version' type='version' use='required'/&gt;
+      &lt;xs:attribute name='media-type' type='xs:string'
+                    use='required' fixed='application/json'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='schema-request'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:any namespace='urn:xmpp:hashes:2'
+                minOccurs='1' maxOccurs='1' processContents='lax'/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='tool' type='toolName' use='required'/&gt;
+      &lt;xs:attribute name='version' type='version' use='required'/&gt;
+      &lt;xs:attribute name='direction' type='direction' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='schema'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name='manifest-hash' type='hashContainer'/&gt;
+        &lt;xs:element name='schema-hash' type='hashContainer'/&gt;
+        &lt;xs:element name='json' type='xs:string'/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='tool' type='toolName' use='required'/&gt;
+      &lt;xs:attribute name='version' type='version' use='required'/&gt;
+      &lt;xs:attribute name='direction' type='direction' use='required'/&gt;
+      &lt;xs:attribute name='media-type' type='xs:string'
+                    use='required' fixed='application/schema+json'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+&lt;/xs:schema&gt;
+</pre></figure>
+  </div>
+  <div class="indent"><h3 id="schema-agent-task">25.2 Agent Task Schema<a class="anchor-link" href="#schema-agent-task"><abbr title="Link to this point in the document">¶</abbr></a></h3>
+    <figure class="code"><figcaption>Schema for urn:xmpp:agent-task:0</figcaption><pre class="prettyprint">&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+&lt;xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'
+           targetNamespace='urn:xmpp:agent-task:0'
+           xmlns='urn:xmpp:agent-task:0'
+           elementFormDefault='qualified'&gt;
+
+  &lt;xs:simpleType name='eventType'&gt;
+    &lt;xs:restriction base='xs:string'&gt;
+      &lt;xs:enumeration value='status'/&gt;
+      &lt;xs:enumeration value='progress'/&gt;
+      &lt;xs:enumeration value='input_required'/&gt;
+      &lt;xs:enumeration value='completed'/&gt;
+      &lt;xs:enumeration value='failed'/&gt;
+      &lt;xs:enumeration value='cancelled'/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+
+  &lt;xs:simpleType name='executionState'&gt;
+    &lt;xs:restriction base='xs:string'&gt;
+      &lt;xs:enumeration value='accepted'/&gt;
+      &lt;xs:enumeration value='running'/&gt;
+      &lt;xs:enumeration value='input_required'/&gt;
+      &lt;xs:enumeration value='cancelling'/&gt;
+      &lt;xs:enumeration value='cancelled'/&gt;
+      &lt;xs:enumeration value='failed'/&gt;
+      &lt;xs:enumeration value='completed'/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+
+  &lt;xs:simpleType name='terminalState'&gt;
+    &lt;xs:restriction base='xs:string'&gt;
+      &lt;xs:enumeration value='cancelled'/&gt;
+      &lt;xs:enumeration value='failed'/&gt;
+      &lt;xs:enumeration value='completed'/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+
+  &lt;xs:simpleType name='identifier'&gt;
+    &lt;xs:restriction base='xs:string'&gt;
+      &lt;xs:pattern value='[A-Za-z0-9._~-]{22,128}'/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+
+  &lt;xs:simpleType name='version'&gt;
+    &lt;xs:restriction base='xs:string'&gt;
+      &lt;xs:pattern value='[A-Za-z0-9._~-]{1,64}'/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+
+  &lt;xs:simpleType name='toolName'&gt;
+    &lt;xs:restriction base='xs:string'&gt;
+      &lt;xs:minLength value='1'/&gt;
+    &lt;/xs:restriction&gt;
+  &lt;/xs:simpleType&gt;
+
+  &lt;xs:complexType name='hashContainer'&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:any namespace='urn:xmpp:hashes:2'
+              minOccurs='1' maxOccurs='1' processContents='lax'/&gt;
+    &lt;/xs:sequence&gt;
+  &lt;/xs:complexType&gt;
+
+  &lt;xs:element name='invoke'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name='manifest-hash' type='hashContainer'/&gt;
+        &lt;xs:element name='arguments'&gt;
+          &lt;xs:complexType&gt;
+            &lt;xs:simpleContent&gt;
+              &lt;xs:extension base='xs:string'&gt;
+                &lt;xs:attribute name='media-type' type='xs:string'
+                              use='required' fixed='application/json'/&gt;
+              &lt;/xs:extension&gt;
+            &lt;/xs:simpleContent&gt;
+          &lt;/xs:complexType&gt;
+        &lt;/xs:element&gt;
+        &lt;xs:element name='deadline' type='xs:dateTime' minOccurs='0'/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='request-id' type='identifier' use='required'/&gt;
+      &lt;xs:attribute name='tool' type='toolName' use='required'/&gt;
+      &lt;xs:attribute name='api-version' type='version' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='accepted'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:attribute name='request-id' type='identifier' use='required'/&gt;
+      &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+      &lt;xs:attribute name='revision' type='xs:nonNegativeInteger' use='required'/&gt;
+      &lt;xs:attribute name='created' type='xs:dateTime' use='required'/&gt;
+      &lt;xs:attribute name='retain-until' type='xs:dateTime' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='provide-input'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name='input'&gt;
+          &lt;xs:complexType&gt;
+            &lt;xs:simpleContent&gt;
+              &lt;xs:extension base='xs:string'&gt;
+                &lt;xs:attribute name='media-type' type='xs:string'
+                              use='required' fixed='application/json'/&gt;
+              &lt;/xs:extension&gt;
+            &lt;/xs:simpleContent&gt;
+          &lt;/xs:complexType&gt;
+        &lt;/xs:element&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+      &lt;xs:attribute name='request-id' type='identifier' use='required'/&gt;
+      &lt;xs:attribute name='expected-revision' type='xs:nonNegativeInteger' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='input-accepted'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+      &lt;xs:attribute name='revision' type='xs:nonNegativeInteger' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='cancel'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name='reason' type='xs:string' minOccurs='0'/&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+      &lt;xs:attribute name='expected-revision' type='xs:nonNegativeInteger' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='cancel-accepted'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+      &lt;xs:attribute name='revision' type='xs:nonNegativeInteger' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='event'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:simpleContent&gt;
+        &lt;xs:extension base='xs:string'&gt;
+          &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+          &lt;xs:attribute name='event-id' type='identifier' use='required'/&gt;
+          &lt;xs:attribute name='revision' type='xs:nonNegativeInteger' use='required'/&gt;
+          &lt;xs:attribute name='type' type='eventType' use='required'/&gt;
+        &lt;/xs:extension&gt;
+      &lt;/xs:simpleContent&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='task-state-request'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='task-state'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name='manifest-hash' type='hashContainer'/&gt;
+        &lt;xs:element name='pending-input' minOccurs='0'&gt;
+          &lt;xs:complexType&gt;
+            &lt;xs:simpleContent&gt;
+              &lt;xs:extension base='xs:string'&gt;
+                &lt;xs:attribute name='media-type' type='xs:string'
+                              use='required' fixed='application/json'/&gt;
+              &lt;/xs:extension&gt;
+            &lt;/xs:simpleContent&gt;
+          &lt;/xs:complexType&gt;
+        &lt;/xs:element&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+      &lt;xs:attribute name='endpoint' type='xs:string' use='required'/&gt;
+      &lt;xs:attribute name='state' type='executionState' use='required'/&gt;
+      &lt;xs:attribute name='revision' type='xs:nonNegativeInteger' use='required'/&gt;
+      &lt;xs:attribute name='api-version' type='version' use='required'/&gt;
+      &lt;xs:attribute name='created' type='xs:dateTime' use='required'/&gt;
+      &lt;xs:attribute name='updated' type='xs:dateTime' use='required'/&gt;
+      &lt;xs:attribute name='deadline' type='xs:dateTime' use='optional'/&gt;
+      &lt;xs:attribute name='retain-until' type='xs:dateTime' use='required'/&gt;
+      &lt;xs:attribute name='result-available' type='xs:boolean' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='task-result-request'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name='task-result'&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:simpleContent&gt;
+        &lt;xs:extension base='xs:string'&gt;
+          &lt;xs:attribute name='task-id' type='identifier' use='required'/&gt;
+          &lt;xs:attribute name='state' type='terminalState' use='required'/&gt;
+          &lt;xs:attribute name='revision' type='xs:nonNegativeInteger' use='required'/&gt;
+          &lt;xs:attribute name='media-type' type='xs:string'
+                        use='required' fixed='application/json'/&gt;
+        &lt;/xs:extension&gt;
+      &lt;/xs:simpleContent&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+&lt;/xs:schema&gt;
+</pre></figure>
+  </div>
+<h2 id="acks">26.
+       Acknowledgements<a class="anchor-link" href="#acks"><abbr title="Link to this point in the document">¶</abbr></a></h2>
+  <p class="" style="">This protocol grew out of real-world work on agent orchestration, including implementation and integration testing with Openfire, and was refined through multiple independent technical reviews. It also builds on the tool model developed by the Model Context Protocol community and on the XMPP specifications cited throughout this document.</p>
+<hr><a name="appendices"></a><h2>Appendices</h2><h3 id="appendix-docinfo">Appendix A: Document Information<a class="anchor-link" href="#appendix-docinfo"><abbr title="Link to this point in the document">¶</abbr></a></h3><dl class="compact"><dt>Series</dt><dd><a href="https://xmpp.org/extensions/">XEP</a></dd><dt>Number</dt><dd>xxxx</dd><dt>Publisher</dt><dd><a href="/xsf/">XMPP Standards Foundation</a></dd><dt>Status</dt><dd><a href="https://xmpp.org/extensions/xep-0001.html#states-ProtoXEP">ProtoXEP</a></dd><dt>Type</dt><dd><a href="https://xmpp.org/extensions/xep-0001.html#types-Standards%20Track">Standards Track</a></dd><dt>Version</dt><dd>0.0.3</dd><dt>Last Updated</dt><dd>2026-07-28</dd><dt>Approving Body</dt><dd><a href="https://xmpp.org/council/">XMPP Council</a></dd><dt>Dependencies</dt><dd>XMPP Core, XMPP IM, <a href="xep-0004.html">XEP-0004</a>, <a href="xep-0030.html">XEP-0030</a>, <a href="xep-0055.html">XEP-0055</a>, <a href="xep-0059.html">XEP-0059</a>, <a href="xep-0068.html">XEP-0068</a>, <a href="xep-0082.html">XEP-0082</a>, <a href="xep-0128.html">XEP-0128</a>, <a href="xep-0300.html">XEP-0300</a></dd><dt>Supersedes</dt><dd>None</dd><dt>Superseded By</dt><dd>None</dd><dt>Short Name</dt><dd>NOT_YET_ASSIGNED</dd></dl><p>
+          This document in other formats:
+          <a class="standardsButton" href="https://xmpp.org/extensions/xep-xxxx.xml">XML</a> 
+          <a class="standardsButton" href="https://xmpp.org/extensions/xep-xxxx.pdf">PDF</a></p><h3 id="appendix-authorinfo">Appendix B: Author Information<a class="anchor-link" href="#appendix-authorinfo"><abbr title="Link to this point in the document">¶</abbr></a></h3><h5>Roman Shterenzon</h5><dl class="compact"><dt>Email</dt><dd><a href="mailto:roman.shterenzon@gmail.com">roman.shterenzon@gmail.com</a></dd><dt>JabberID</dt><dd><a href="xmpp:roman.shterenzon@gmail.com">roman.shterenzon@gmail.com</a></dd></dl><h3 id="appendix-legal">Appendix C: Legal Notices<a class="anchor-link" href="#appendix-legal"><abbr title="Link to this point in the document">¶</abbr></a></h3><div class="indent"><h4>Copyright</h4><p>This XMPP Extension Protocol is copyright © 1999 – 2024 by the <a href="https://xmpp.org/">XMPP Standards Foundation</a> (XSF).</p><h4>Permissions</h4><p>Permission is hereby granted, free of charge, to any person obtaining a copy of this specification (the "Specification"), to make use of the Specification without restriction, including without limitation the rights to implement the Specification in a software program, deploy the Specification in a network service, and copy, modify, merge, publish, translate, distribute, sublicense, or sell copies of the Specification, and to permit persons to whom the Specification is furnished to do so, subject to the condition that the foregoing copyright notice and this permission notice shall be included in all copies or substantial portions of the Specification. Unless separate permission is granted, modified works that are redistributed shall not contain misleading information regarding the authors, title, number, or publisher of the Specification, and shall not claim endorsement of the modified works by the authors, any organization or project to which the authors belong, or the XMPP Standards Foundation.</p><h4>Disclaimer of Warranty</h4><p class="box info">## NOTE WELL: This Specification is provided on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. ##</p><h4>Limitation of Liability</h4><p>In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate and grossly negligent acts) or agreed to in writing, shall the XMPP Standards Foundation or any author of this Specification be liable for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising from, out of, or in connection with the Specification or the implementation, deployment, or other use of the Specification (including but not limited to damages for loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses), even if the XMPP Standards Foundation or such author has been advised of the possibility of such damages.</p><h4>IPR Conformance</h4><p>This XMPP Extension Protocol has been contributed in full conformance with the XSF's Intellectual Property Rights Policy (a copy of which can be found at &lt;<a href="https://xmpp.org/about/xsf/ipr-policy">https://xmpp.org/about/xsf/ipr-policy</a>&gt; or obtained by writing to XMPP Standards Foundation, P.O. Box 787, Parker, CO 80134 USA).</p><h4>Visual Presentation</h4><p>The HTML representation (you are looking at) is maintained by the XSF. It is based on the <a href="http://yaml.de">YAML CSS Framework</a>, which is licensed under the terms of the <a href="https://creativecommons.org/licenses/by/2.0/">CC-BY-SA 2.0</a> license.</p></div><h3 id="appendix-xmpp">Appendix D: Relation to XMPP<a class="anchor-link" href="#appendix-xmpp"><abbr title="Link to this point in the document">¶</abbr></a></h3><p class="indent">The Extensible Messaging and Presence Protocol (XMPP) is defined in the XMPP Core (RFC 6120) and XMPP IM (RFC 6121) specifications contributed by the XMPP Standards Foundation to the Internet Standards Process, which is managed by the Internet Engineering Task Force in accordance with RFC 2026. Any protocol defined in this document has been developed outside the Internet Standards Process and is to be understood as an extension to XMPP rather than as an evolution, development, or modification of XMPP itself.</p><h3 id="appendix-discuss">Appendix E: Discussion Venue<a class="anchor-link" href="#appendix-discuss"><abbr title="Link to this point in the document">¶</abbr></a></h3><p class="indent">The primary venue for discussion of XMPP Extension Protocols is the &lt;<a href="https://mail.jabber.org/mailman/listinfo/standards">standards@xmpp.org</a>&gt; discussion list.</p><p class="indent">Discussion on other xmpp.org discussion lists might also be appropriate; see &lt;<a href="https://xmpp.org/community/">https://xmpp.org/community/</a>&gt; for a complete list.</p><p class="indent">Errata can be sent to &lt;<a href="mailto:editor@xmpp.org">editor@xmpp.org</a>&gt;.</p><h3 id="appendix-conformance">Appendix F: Requirements Conformance<a class="anchor-link" href="#appendix-conformance"><abbr title="Link to this point in the document">¶</abbr></a></h3><p class="indent">
+          The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+          "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+          "MAY", and "OPTIONAL" in this document are to be interpreted as
+          described in <a href="https://tools.ietf.org/rfc/bcp/bcp14.txt">BCP 14</a>
+          [<a href="https://www.ietf.org/rfc/rfc2119.txt">RFC2119</a>]
+          [<a href="https://tools.ietf.org/rfc/rfc8174.txt">RFC8174</a>] when,
+          and only when, they appear in all capitals, as shown here.
+        </p><h3 id="appendix-notes">Appendix G: Notes<a class="anchor-link" href="#appendix-notes"><abbr title="Link to this point in the document">¶</abbr></a></h3><div class="indent"><p><a name="nt-id63">1</a>. XEP-0030: Service Discovery &lt;<a href="https://xmpp.org/extensions/xep-0030.html">https://xmpp.org/extensions/xep-0030.html</a>&gt;.</p><p><a name="nt-id64">2</a>. XEP-0059: Result Set Management &lt;<a href="https://xmpp.org/extensions/xep-0059.html">https://xmpp.org/extensions/xep-0059.html</a>&gt;.</p><p><a name="nt-id65">3</a>. XEP-0128: Service Discovery Extensions &lt;<a href="https://xmpp.org/extensions/xep-0128.html">https://xmpp.org/extensions/xep-0128.html</a>&gt;.</p><p><a name="nt-id66">4</a>. XEP-0055: Jabber Search &lt;<a href="https://xmpp.org/extensions/xep-0055.html">https://xmpp.org/extensions/xep-0055.html</a>&gt;.</p><p><a name="nt-id67">5</a>. XEP-0184: Message Delivery Receipts &lt;<a href="https://xmpp.org/extensions/xep-0184.html">https://xmpp.org/extensions/xep-0184.html</a>&gt;.</p><p><a name="nt-id68">6</a>. XEP-0335: JSON Containers &lt;<a href="https://xmpp.org/extensions/xep-0335.html">https://xmpp.org/extensions/xep-0335.html</a>&gt;.</p><p><a name="nt-id69">7</a>. XEP-0114: Jabber Component Protocol &lt;<a href="https://xmpp.org/extensions/xep-0114.html">https://xmpp.org/extensions/xep-0114.html</a>&gt;.</p><p><a name="nt-id70">8</a>. XEP-0199: XMPP Ping &lt;<a href="https://xmpp.org/extensions/xep-0199.html">https://xmpp.org/extensions/xep-0199.html</a>&gt;.</p><p><a name="nt-id71">9</a>. XEP-0300: Use of Cryptographic Hash Functions in XMPP &lt;<a href="https://xmpp.org/extensions/xep-0300.html">https://xmpp.org/extensions/xep-0300.html</a>&gt;.</p><p><a name="nt-id72">10</a>. XEP-0004: Data Forms &lt;<a href="https://xmpp.org/extensions/xep-0004.html">https://xmpp.org/extensions/xep-0004.html</a>&gt;.</p><p><a name="nt-id73">11</a>. XEP-0292: vCard4 over XMPP &lt;<a href="https://xmpp.org/extensions/xep-0292.html">https://xmpp.org/extensions/xep-0292.html</a>&gt;.</p><p><a name="nt-id74">12</a>. XEP-0054: vcard-temp &lt;<a href="https://xmpp.org/extensions/xep-0054.html">https://xmpp.org/extensions/xep-0054.html</a>&gt;.</p><p><a name="nt-id75">13</a>. XEP-0082: XMPP Date and Time Profiles &lt;<a href="https://xmpp.org/extensions/xep-0082.html">https://xmpp.org/extensions/xep-0082.html</a>&gt;.</p><p><a name="nt-id76">14</a>. XEP-0334: Message Processing Hints &lt;<a href="https://xmpp.org/extensions/xep-0334.html">https://xmpp.org/extensions/xep-0334.html</a>&gt;.</p><p><a name="nt-id77">15</a>. XEP-0045: Multi-User Chat &lt;<a href="https://xmpp.org/extensions/xep-0045.html">https://xmpp.org/extensions/xep-0045.html</a>&gt;.</p><p><a name="nt-id78">16</a>. XEP-0085: Chat State Notifications &lt;<a href="https://xmpp.org/extensions/xep-0085.html">https://xmpp.org/extensions/xep-0085.html</a>&gt;.</p><p><a name="nt-id79">17</a>. XEP-0359: Unique and Stable Stanza IDs &lt;<a href="https://xmpp.org/extensions/xep-0359.html">https://xmpp.org/extensions/xep-0359.html</a>&gt;.</p><p><a name="nt-id80">18</a>. XEP-0461: Message Replies &lt;<a href="https://xmpp.org/extensions/xep-0461.html">https://xmpp.org/extensions/xep-0461.html</a>&gt;.</p><p><a name="nt-id81">19</a>. XEP-0191: Blocking Command &lt;<a href="https://xmpp.org/extensions/xep-0191.html">https://xmpp.org/extensions/xep-0191.html</a>&gt;.</p><p><a name="nt-id82">20</a>. XEP-0280: Message Carbons &lt;<a href="https://xmpp.org/extensions/xep-0280.html">https://xmpp.org/extensions/xep-0280.html</a>&gt;.</p><p><a name="nt-id83">21</a>. XEP-0313: Message Archive Management &lt;<a href="https://xmpp.org/extensions/xep-0313.html">https://xmpp.org/extensions/xep-0313.html</a>&gt;.</p><p><a name="nt-id84">22</a>. XEP-0068: Field Data Standardization for Data Forms &lt;<a href="https://xmpp.org/extensions/xep-0068.html">https://xmpp.org/extensions/xep-0068.html</a>&gt;.</p></div><h3 id="appendix-revs">Appendix H: Revision History<a class="anchor-link" href="#appendix-revs"><abbr title="Link to this point in the document">¶</abbr></a></h3><p>Note: Older versions of this specification might be available at <a href="https://xmpp.org/extensions/attic/">https://xmpp.org/extensions/attic/</a></p><ol class="revision-history"><li id="revision-history-v0.0.3"><div class="revision-head">Version <a href="https://xmpp.org/extensions/attic/xep-xxxx-0.0.3.html">0.0.3</a> (2026-07-28)<a class="anchor-link" href="#revision-history-v0.0.3"><abbr title="Link to this point in the document">¶</abbr></a></div><p class="" style="">Clarify durable IQ acceptance and canonical retrieval, complete JSON Schema dialect rules, encode unrestricted MCP tool names in discovery nodes, tighten revision semantics, add a federated example, and improve editorial structure.</p><div class="revision-author">RS</div></li><li id="revision-history-v0.0.2"><div class="revision-head">Version <a href="https://xmpp.org/extensions/attic/xep-xxxx-0.0.2.html">0.0.2</a> (2026-07-28)<a class="anchor-link" href="#revision-history-v0.0.2"><abbr title="Link to this point in the document">¶</abbr></a></div><p class="" style="">Replace message-based commands with IQ admission, make manifests immutable, add complete task recovery and RSM paging, and correct discovery, hashing, security, and registration semantics.</p><div class="revision-author">RS</div></li><li id="revision-history-v0.0.1"><div class="revision-head">Version <a href="https://xmpp.org/extensions/attic/xep-xxxx-0.0.1.html">0.0.1</a> (2026-07-27)<a class="anchor-link" href="#revision-history-v0.0.1"><abbr title="Link to this point in the document">¶</abbr></a></div><p class="" style="">First draft.</p><div class="revision-author">RS</div></li></ol><h3 id="appendix-biblatex">Appendix I: Bib(La)TeX Entry</h3><pre>
+@report{shterenzon2026xepxxxx,
+  title = {XMPP Agent Gateway},
+  author = {Shterenzon, Roman},
+  type = {XEP},
+  number = {xxxx},
+  version = {0.0.3},
+  institution = {XMPP Standards Foundation},
+  url = {https://xmpp.org/extensions/xep-xxxx.html},
+  date = {2026-07-27/2026-07-28},
+}</pre><p>END</p></body></html>

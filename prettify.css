@@ -1,0 +1,40 @@
+/* Pretty printing styles. Used with prettify.js. */
+
+.str { color: #080; }
+.kwd { color: #008; }
+.com { color: #800; }
+.typ { color: #606; }
+.lit { color: #066; }
+.pun { color: #660; }
+.pln { color: #000; }
+.tag { color: #008; }
+.atn { color: #606; }
+.atv { color: #080; }
+.dec { color: #606; }
+
+@media print {
+  .str { color: #060; }
+  .kwd { color: #006; font-weight: bold; }
+  .com { color: #600; font-style: italic; }
+  .typ { color: #404; font-weight: bold; }
+  .lit { color: #044; }
+  .pun { color: #440; }
+  .pln { color: #000; }
+  .tag { color: #006; font-weight: bold; }
+  .atn { color: #404; }
+  .atv { color: #060; }
+}
+
+@media screen and ( prefers-color-scheme: dark ) {
+  .str { color: #0d0; }
+  .kwd { color: #00d; }
+  .com { color: #f88; }
+  .typ { color: #d0d; }
+  .lit { color: #0dd; }
+  .pun { color: #dd0; }
+  .pln { color: #fff; }
+  .tag { color: #88f; font-weight: bold; }
+  .atn { color: #f8f; }
+  .atv { color: #8f8; }
+  .dec { color: #f8f; }
+}
