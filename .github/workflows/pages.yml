@@ -1,0 +1,52 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Prepare site
+        run: |
+          mkdir -p _site
+          cp protoxep-xmpp-agent-gateway.html _site/index.html
+          cp protoxep-xmpp-agent-gateway.xml _site/
+          cp protoxep-xmpp-agent-gateway.pdf _site/
+          cp xmpp.css prettify.css prettify.js _site/
+
+          sed -i \
+            -e 's|https://xmpp.org/extensions/xep-xxxx.xml|protoxep-xmpp-agent-gateway.xml|g' \
+            -e 's|https://xmpp.org/extensions/xep-xxxx.pdf|protoxep-xmpp-agent-gateway.pdf|g' \
+            _site/index.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
