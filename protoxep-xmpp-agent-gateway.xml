@@ -622,7 +622,7 @@
     <code caption='Normative agent manifest JSON Schema'><![CDATA[
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:xmpp:agent-api:0#manifest-json",
+  "$id": "urn:xmpp:agent-api:0:manifest-json",
   "type": "object",
   "required": ["manifestSpecVersion", "agent", "tools"],
   "properties": {
@@ -814,7 +814,7 @@
   <code caption='Normative task event payload JSON Schema'><![CDATA[
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:xmpp:agent-task:0#event-json",
+  "$id": "urn:xmpp:agent-task:0:event-json",
   "$defs": {
     "status": {
       "type": "object",
@@ -1352,35 +1352,32 @@
     <p>The standards profile uses RFC 8785 canonicalization and &xep0300; hashes. The deployed private profile used a simpler key-sorting algorithm; its values are comparable only within that profile. A client that cannot reproduce the declared canonicalization MAY treat a hash as an opaque cache validator but MUST still validate received JSON and schema content.</p>
   </section2>
   <section2 topic='Implementation Status and Known Differences' anchor='implementation-status'>
-    <p>The implementation on which this draft is based has been integration-tested with Openfire. This is evidence from one gateway implementation against an XMPP server, not a claim of interoperability between two independent implementations of this protocol.</p>
+    <p>The implementation on which this draft is based has been integration-tested using two independently configured Openfire server instances connected by XMPP server-to-server federation, with the gateway hosted on one domain and reached from the other. The tests exercise deny-by-default federation and independently configured visibility and invocation grants. This is evidence from one gateway implementation in an Openfire-based multi-domain deployment, not a claim of interoperability between two independent implementations of this protocol.</p>
     <table caption='Implementation and protocol status'>
-      <tr><th>Capability</th><th>Deployed predecessor</th><th>Version 0 design</th><th>Independent interoperability test</th></tr>
-      <tr><td>External-component hosting and endpoint discovery</td><td>Yes</td><td>Required by applicable profile</td><td>No</td></tr>
-      <tr><td>Directory and search</td><td>Yes, without complete RSM</td><td>Visibility-scoped RSM</td><td>No</td></tr>
-      <tr><td>Immutable manifest retrieval and activation</td><td>No</td><td>Defined</td><td>No</td></tr>
-      <tr><td>Version-pinned schemas and tools</td><td>Partial</td><td>Defined</td><td>No</td></tr>
-      <tr><td>IQ durable task admission</td><td>No</td><td>Defined</td><td>No</td></tr>
-      <tr><td>Progress, input, cancellation, and settlement</td><td>Yes, private message profile</td><td>Revisioned notifications plus IQ commands</td><td>No</td></tr>
-      <tr><td>Complete state and result recovery</td><td>No</td><td>Defined</td><td>No</td></tr>
-      <tr><td>Full JSON Schema 2020-12 evaluation</td><td>No</td><td>Required</td><td>No</td></tr>
-      <tr><td>Human messaging and requester delivery</td><td>Yes</td><td>Optional application profile</td><td>No</td></tr>
+      <tr><th>Capability</th><th>NanoClaw implementation of the :0 protocol</th><th>Independent interoperability test</th></tr>
+      <tr><td>External-component hosting and endpoint discovery</td><td>Implemented</td><td>No</td></tr>
+      <tr><td>Visibility-scoped directory and search with RSM</td><td>Implemented</td><td>No</td></tr>
+      <tr><td>Immutable manifest retrieval and explicit activation</td><td>Implemented</td><td>No</td></tr>
+      <tr><td>Version-pinned schemas and tools</td><td>Implemented</td><td>No</td></tr>
+      <tr><td>IQ durable task admission and idempotent request replay</td><td>Implemented</td><td>No</td></tr>
+      <tr><td>Progress, input, cancellation, and settlement</td><td>Implemented</td><td>No</td></tr>
+      <tr><td>Complete state and result recovery within the promised retention period</td><td>Implemented</td><td>No</td></tr>
+      <tr><td>Required JSON Schema 2020-12 evaluation</td><td>Implemented with bounded execution</td><td>No</td></tr>
+      <tr><td>Federated visibility and invocation policy</td><td>Deny by default; independently configurable allowlists</td><td>No</td></tr>
+      <tr><td>Human messaging and requester delivery</td><td>Implemented as a non-conformance application profile</td><td>No</td></tr>
     </table>
     <p>The deployed runtime enforces the gateway/model boundary described above. Model-facing discovery returns opaque <tt>agent:</tt> handles rather than XMPP endpoint identifiers. Inbound agent tasks are formatted as transport-neutral tool, argument, and event data; wire JIDs, component domains, tenant and workspace routing, endpoint addresses, and stanza correlation remain host-owned. Action tasks run in task-scoped sessions and settle only through explicit task actions; provider final prose cannot escape through a human channel.</p>
     <p>The deployed application defines a local tool named <tt>conversation.respond</tt>. This is an application convention, not a well-known name or interoperable feature defined by this specification. It uses the durable task transport, while the runtime converts the target's non-empty prose into the application's declared structured result. Implementations using that name remain responsible for publishing and versioning their own schemas and result-size limits.</p>
     <p>The deployed caller API additionally supports a local <tt>delivery="requester"</tt> policy for that application tool. It resolves the active XMPP requester route from session state, persists it with the task, sends the completed response through the channel adapter with the target endpoint JID as sender identity, records delivery state, and returns that outcome to the calling agent. This policy has no representation or negotiation in the protocol defined by this document and is therefore not part of conformance.</p>
     <p>The deployed direct-delivery path currently sends an ordinary chat message without a standardized indication that another agent initiated the interaction. It also has at-least-once semantics: a crash after network send but before committing the delivery marker can expose the same response to the human twice. A future interoperable delivery profile needs explicit provenance, recipient-consent and blocking behavior, and end-to-end acknowledgement or deduplication.</p>
-    <p>The following normative requirements deliberately harden or extend the deployed implementation and therefore identify implementation work needed for full conformance:</p>
+    <p>The version 0 implementation replaces the predecessor wire profile rather than operating as a dual stack. It uses the fixed <tt>urn:xmpp:*:0</tt> namespaces, immutable manifests with explicit activation, standard JSON media types, RFC 8785 canonicalization, &xep0300; hashes, version-pinned tool nodes and schemas, receiver-generated task IDs, revisioned lifecycle events, complete recovery IQs, and authorization derived from the authenticated XMPP sender and trusted local policy. Directory, search, and tool paging use &xep0059;. The committed manifest, event, and XML Schema artifacts are extracted from the normative blocks in this document, normalized deterministically, and compared byte-for-byte with the generated output by an artifact-synchronization check; protocol namespace constants are checked separately.</p>
+    <p>The following work remains outside the implemented conformance surface:</p>
     <ul>
-      <li>the root directory and Jabber Search currently expose a public cross-tenant identity view, while an explicit directory-node query is tenant-scoped; a conforming deployment needs one explicit and consistently applied visibility policy;</li>
-      <li>remote invocation parsing currently accepts the <tt>caller</tt> and tenant context carried in the payload; a conforming gateway must bind the caller to the authenticated stanza sender and derive tenant context from trusted server-side policy;</li>
-      <li>the current JSON validator implements a useful subset of JSON Schema constraints rather than complete JSON Schema 2020-12 evaluation;</li>
-      <li>permission-bearing and approval-required tools currently fail closed but do not yet consume a portable authorization grant;</li>
-      <li>the manifest model stores <tt>openWorldHint</tt>, but the deployed tool information form does not yet emit <tt>open_world</tt>; and</li>
-      <li>the deployed private wire profile uses <tt>xmpp+mcp</tt> endpoint identifiers, MCP-prefixed endpoint feature and form identifiers, namespace-valued <tt>specVersion</tt>, volatile availability in the endpoint form, the same <tt>schema</tt> element for requests and results, and a pre-RFC-8785 digest algorithm; these wire identifiers are translated to opaque handles before model-facing use;</li>
-      <li>the deployed protocol has no immutable manifest retrieval, active-version operation, IQ admission, receiver-generated task IDs, global event revisions, or complete task state and result queries; and</li>
-      <li>the deployed protocol has no directory paging, registration expiry, or tool-list change notification.</li>
+      <li>permission-bearing and approval-required tools fail closed unless trusted local policy establishes the required authorization or approval;</li>
+      <li>portable approval and delegation grants, registration expiry, and tool-list change notification remain future extensions; and</li>
+      <li>the Openfire suites provide integration evidence only; no independent implementation interoperability result is claimed.</li>
     </ul>
-    <p>These differences distinguish deployed predecessor behavior from requirements that must be completed before an implementation claims conformance to this ProtoXEP.</p>
+    <p>The predecessor implementation and its private identifiers are not a supported compatibility mode and are not part of conformance to this specification.</p>
   </section2>
 </section1>
 
