@@ -52,44 +52,8 @@
     <jid>roman.shterenzon@gmail.com</jid>
   </author>
   <revision>
-    <version>0.0.7</version>
-    <date>2026-07-28</date>
-    <initials>RS</initials>
-    <remark><p>Clarify implementation artifact synchronization and align namespace and IANA wording with XEP style.</p></remark>
-  </revision>
-  <revision>
-    <version>0.0.6</version>
-    <date>2026-07-28</date>
-    <initials>RS</initials>
-    <remark><p>Expand use cases with actors, success scenarios, alternate flows, errors, and normative cross-references.</p></remark>
-  </revision>
-  <revision>
-    <version>0.0.5</version>
-    <date>2026-07-28</date>
-    <initials>RS</initials>
-    <remark><p>Apply XEP style conventions to XML examples and protocol terminology.</p></remark>
-  </revision>
-  <revision>
-    <version>0.0.4</version>
-    <date>2026-07-28</date>
-    <initials>RS</initials>
-    <remark><p>Complete the normative dependency metadata.</p></remark>
-  </revision>
-  <revision>
-    <version>0.0.3</version>
-    <date>2026-07-28</date>
-    <initials>RS</initials>
-    <remark><p>Clarify durable IQ acceptance and canonical retrieval, complete JSON Schema dialect rules, encode unrestricted MCP tool names in discovery nodes, tighten revision semantics, add a federated example, and improve editorial structure.</p></remark>
-  </revision>
-  <revision>
-    <version>0.0.2</version>
-    <date>2026-07-28</date>
-    <initials>RS</initials>
-    <remark><p>Replace message-based commands with IQ admission, make manifests immutable, add complete task recovery and RSM paging, and correct discovery, hashing, security, and registration semantics.</p></remark>
-  </revision>
-  <revision>
     <version>0.0.1</version>
-    <date>2026-07-27</date>
+    <date>2026-07-28</date>
     <initials>RS</initials>
     <remark><p>First draft.</p></remark>
   </revision>
