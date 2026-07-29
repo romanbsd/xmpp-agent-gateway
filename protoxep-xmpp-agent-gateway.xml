@@ -59,7 +59,7 @@
     <version>0.0.3</version>
     <date>2026-07-29</date>
     <initials>RS</initials>
-    <remark><p>Defined durable commit ordering for interactive-input races, retained superseded input identity, and made deadline and expiry enforcement authoritative at expiration and task-mutation boundaries with exact timestamp comparison.</p></remark>
+    <remark><p>Defined durable commit ordering for interactive-input races, retained superseded input identity, made deadline and expiry enforcement authoritative at expiration and task-mutation boundaries with exact timestamp comparison, and defined secure dispatch and failure handling for malformed lifecycle messages.</p></remark>
   </revision>
   <revision>
     <version>0.0.2</version>
@@ -1090,6 +1090,7 @@
 ]]></example>
     <p>The value of the 'retain-until' attribute on the &lt;accepted/&gt; element is a unilateral promise by the target. Complete state and any terminal result MUST remain queryable until then, and state MUST remain queryable throughout a longer non-terminal lifetime. A caller requiring longer retention MUST preserve its own record.</p>
     <p>When present, progress <tt>percent</tt> MUST be a finite number from 0 through 100 inclusive and SHOULD be nondecreasing. An identical replay MUST retain the same event ID, revision, type, and canonical payload. A caller MUST ignore such a replay. A repeated revision with a different event ID or payload is a protocol error and MUST be ignored and logged. A revision gap does not imply failure; the caller SHOULD query task state, which returns the current revision and complete resumable state.</p>
+    <p>For lifecycle dispatch, the caller recognizes a task event only by an &lt;event/&gt; element qualified by 'urn:xmpp:agent-task:0' that is a direct child of a message stanza. A message containing at least one such direct child is a recognized lifecycle message and is valid only if it contains exactly one such child, has type <tt>normal</tt> either explicitly or by the &rfc6121; default, the &lt;event/&gt; element conforms to the XML Schema in this document, its character data parses and validates against the lifecycle JSON Schema selected by the event type, the task ID identifies a locally retained task whose stored target bare JID equals the authenticated stanza sender's bare JID, and the event is consistent with durable task history. If any of these conditions fails, the caller MUST ignore the entire message stanza and MUST log a protocol error using bounded, redacted diagnostics that do not include the full event payload or credentials. It MUST NOT reinterpret or deliver any part of the malformed stanza as an ordinary chat message. An element whose local name is <tt>event</tt> but whose namespace is not 'urn:xmpp:agent-task:0' is not a task event. If that namespace is unsupported, the recipient MUST apply the unknown extended-content rules in &rfc6120;: when the element is the message stanza's only child, it MUST either ignore the entire stanza or return a stanza error, which SHOULD be &lt;service-unavailable/&gt;; when the message also contains recognized content, it MUST ignore only the portion qualified by the unsupported namespace.</p>
     <example caption='Target reports progress'><![CDATA[
 <message from='weather@agents.example'
          id='progress-task-7f2a9c41d8804e96bb478af6453c0371'
