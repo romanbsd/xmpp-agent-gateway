@@ -111,8 +111,8 @@
   </section2>
 
   <section2 topic='Discovering and Invoking a Tool' anchor='use-case-invocation'>
-    <p><strong>Actors and success scenario:</strong> A caller retrieves an endpoint's immutable manifest, records its exact version and hash, lists the tools pinned to that version, retrieves the selected tool's metadata and schemas, and sends an invocation to the target. The target validates and durably admits the task before returning acceptance, following <link url='#manifest-retrieval'>Manifest Retrieval</link>, <link url='#list-tools'>Listing Tools</link>, <link url='#schemas'>Retrieving Tool Schemas</link>, and <link url='#invocation'>Invocation</link>.</p>
-    <p><strong>Alternate flows and errors:</strong> A stale manifest hash produces a &lt;conflict/&gt; error, invalid arguments produce a &lt;not-acceptable/&gt; error, and an unknown or hidden tool or version produces an &lt;item-not-found/&gt; error. No task exists unless durable admission succeeds.</p>
+    <p><strong>Actors and success scenario:</strong> A caller obtains an endpoint's immutable manifest metadata and any schemas needed to form arguments through visibility-authorized protocol retrieval or trusted out-of-band provisioning, records the exact version and hash, selects a tool pinned to that version, and sends an invocation to the target. The target independently authorizes invocation, validates the pinned request, and durably admits the task before returning acceptance, following <link url='#manifest-retrieval'>Manifest Retrieval</link>, <link url='#list-tools'>Listing Tools</link>, <link url='#schemas'>Retrieving Tool Schemas</link>, and <link url='#invocation'>Invocation</link>.</p>
+    <p><strong>Alternate flows and errors:</strong> A stale manifest hash produces a &lt;conflict/&gt; error, invalid arguments produce a &lt;not-acceptable/&gt; error, and an unknown tool or version or one unauthorized for invocation produces an &lt;item-not-found/&gt; error. A caller with invocation permission but without visibility cannot refresh protocol metadata and must obtain updated pins through a trusted authorized channel. No task exists unless durable admission succeeds.</p>
   </section2>
 
   <section2 topic='Recovering After Notification Loss' anchor='use-case-recovery'>
@@ -830,7 +830,7 @@
       <li>The result MUST contain the exact version, a 'media-type' attribute whose value is "application/json", an &xep0300; hash, and the canonical registered JSON document.</li>
       <li>After XML character extraction, the UTF-8 bytes in the &lt;json/&gt; element MUST be byte-for-byte identical to the RFC 8785 canonical bytes that were hashed and advertised.</li>
       <li>The stored source formatting is not protocol-visible and MUST NOT affect retrieval or hash validation.</li>
-      <li>Access control MUST be identical to the corresponding tool and schema discovery policy.</li>
+      <li>Access control MUST be identical to the corresponding tool and schema discovery policy. Invocation permission alone MUST NOT authorize manifest retrieval.</li>
     </ul>
     <p>A previously registered version remains addressable by exact value to a client that recorded it. Version enumeration is not defined. The target MUST retain the exact manifest and schemas selected at task admission through the task lifetime and promised result-retention period.</p>
     <example caption='Client retrieves the selected manifest'><![CDATA[
@@ -988,6 +988,8 @@
 </iq>
 ]]></example>
     <p>The 'request-id', 'tool', and 'api-version' attributes, manifest hash, and &lt;arguments/&gt; element are REQUIRED. The &lt;arguments/&gt; element MUST include a 'media-type' attribute whose value is "application/json". A target MUST pin the exact manifest and schemas before admission. The authoritative authorization principal is the immediate authenticated sender's bare JID. The full JID that issued the IQ is the default best-effort notification route; any authorized resource of the same bare JID can use recovery operations.</p>
+    <p>The target MUST evaluate invocation authorization independently of directory and protocol-metadata visibility. After authenticating the sender, it MUST authorize the requested endpoint and exact tool before returning an error that reveals whether the endpoint, API version, manifest hash, tool, schema, or arguments are valid. A nonexistent or invocation-unauthorized target or tool MUST produce the same safe &lt;item-not-found/&gt; error. Lack of visibility alone MUST NOT cause an otherwise authorized invocation with exact pinned metadata to fail.</p>
+    <p>A caller without visibility can invoke only with the exact endpoint JID, API version, tool name, manifest hash, and sufficient trusted knowledge to construct valid arguments, obtained during an earlier authorized retrieval or through trusted out-of-band provisioning. This protocol provides no discovery or metadata-refresh path to such a caller. If the active version changes or a supplied manifest hash becomes stale, the caller MUST obtain updated metadata through a trusted authorized channel and MUST NOT guess or enumerate hidden metadata.</p>
     <p>The target computes a replay fingerprint over the authenticated caller bare JID, target bare JID, protocol namespace, request ID, tool, API version, manifest hash, canonical arguments, deadline, and every security-relevant extension. During the advertised replay window, reuse with the same fingerprint MUST return the same accepted task and MUST NOT execute twice; reuse with a different fingerprint MUST fail with a &lt;conflict/&gt; error. A target MUST retain the replay record through the longer of that window, the task lifetime, and the promised result-retention period.</p>
     <p>After the advertised replay window and all required task retention have expired, a target MAY forget the request ID and MAY admit a repeated request as new work. Therefore a caller MUST NOT retry after that window without tool-specific reconciliation. This protocol provides at-most-once task admission only inside the replay-retention window and does not claim exactly-once external side effects.</p>
     <p>An IQ result containing an &lt;accepted/&gt; element represents durable task acceptance, not merely receipt of the request. The target MUST persist the task and replay record before sending that result.</p>
@@ -1344,13 +1346,13 @@
     <tr><th>Condition</th><th>Use</th></tr>
     <tr><td>&lt;bad-request/&gt;</td><td>Malformed JSON, missing attributes, invalid tool name, or invalid endpoint identifier.</td></tr>
     <tr><td>&lt;forbidden/&gt;</td><td>Registration for another JID or a denied operation where existence disclosure is acceptable.</td></tr>
-    <tr><td>&lt;item-not-found/&gt;</td><td>Unknown, hidden, expired, or unauthorized endpoint, tool, version, schema, task, or input request.</td></tr>
+    <tr><td>&lt;item-not-found/&gt;</td><td>An endpoint, tool, version, schema, task, or input request that is nonexistent, expired, hidden from the requested discovery or metadata operation, or unauthorized for the requested operation.</td></tr>
     <tr><td>&lt;not-acceptable/&gt;</td><td>Unsupported manifest version, schema mismatch, failed JSON Schema or I-JSON validation, or expired deadline.</td></tr>
     <tr><td>&lt;conflict/&gt;</td><td>Conflicting registration, authorized invocation, input, or cancellation fingerprint mismatch, stale or already answered input, or conflicting terminal task event.</td></tr>
     <tr><td>&lt;resource-constraint/&gt;</td><td>Manifest or schema too large, too many pending IQs, task capacity exhausted, or rate limit reached.</td></tr>
     <tr><td>&lt;service-unavailable/&gt;</td><td>The addressed protocol, endpoint runtime, or optional feature is unavailable.</td></tr>
   </table>
-  <p>To avoid cross-principal enumeration, a gateway MUST return an &lt;item-not-found/&gt; error for an endpoint or task that exists but is not visible or authorized to the requester, using the same safe error payload as a nonexistent object.</p>
+  <p>To avoid cross-principal enumeration, a gateway MUST return an &lt;item-not-found/&gt; error for an object that is nonexistent or unauthorized for the requested operation, using the same safe error payload. For discovery and metadata operations, an object not visible to the requester is unauthorized for that operation. For invocation, lack of invocation permission is unauthorized, but lack of visibility alone MUST NOT deny an otherwise authorized request. Task input, cancellation, state, and result operations MUST apply their task-specific caller authorization and MUST NOT be denied solely because endpoint visibility later changes.</p>
   <p>Execution failures after task acceptance MUST use a <tt>failed</tt> lifecycle event with a stable application error code, a safe human-readable message, and a <tt>retryable</tt> boolean. Error messages MUST NOT expose secrets, internal prompts, stack traces, or data belonging to another principal.</p>
   <table caption='Reserved task failure codes'>
     <tr><th>Code</th><th>Meaning</th></tr>
@@ -1365,8 +1367,7 @@
   <ul>
     <li>A self-registered manifest JID MUST match the authenticated C2S principal; virtual endpoints require trusted administrative provisioning.</li>
     <li>An endpoint API version is immutable, and every tool list, tool query, schema request, invocation, task state, and result MUST remain pinned to its exact manifest.</li>
-    <li>Directory visibility and invocation permission are separate decisions. Visible does not imply invocable.</li>
-    <li>Search, directory items, endpoint information, tool information, and schema retrieval MUST each apply the relevant visibility policy.</li>
+    <li>The same requester-specific visibility decision MUST govern search, directory items, endpoint information, manifest retrieval, tool information, and schema retrieval. Invocation permission is independent: visibility does not imply invocation permission, invocation permission does not imply visibility, and an otherwise authorized invocation with exact pinned metadata MUST NOT require visibility.</li>
     <li>A caller gateway MAY prevalidate invocation arguments; the target MUST validate them against the authoritative registered schema. A caller SHOULD validate structured results on return.</li>
     <li>The target MUST be the only principal allowed to report progress or settle its task.</li>
     <li>An authorized resource of the immediate caller bare JID MUST be the only principal allowed to answer requested input, request cancellation, or recover state and results.</li>
