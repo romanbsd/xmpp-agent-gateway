@@ -17,12 +17,15 @@
   <dependencies>
     <spec>XMPP Core</spec>
     <spec>XMPP IM</spec>
+    <spec>RFC 3986</spec>
     <spec>RFC 4648</spec>
     <spec>RFC 8785</spec>
+    <spec>RFC 9110</spec>
     <spec>JSON Schema 2020-12</spec>
     <spec>Model Context Protocol</spec>
     <spec>XEP-0004</spec>
     <spec>XEP-0030</spec>
+    <spec>XEP-0054</spec>
     <spec>XEP-0055</spec>
     <spec>XEP-0059</spec>
     <spec>XEP-0068</spec>
@@ -31,6 +34,7 @@
     <spec>XEP-0128</spec>
     <spec>XEP-0191</spec>
     <spec>XEP-0199</spec>
+    <spec>XEP-0292</spec>
     <spec>XEP-0300</spec>
     <spec>XEP-0334</spec>
     <spec>XEP-0461</spec>
@@ -51,6 +55,12 @@
     <email>roman.shterenzon@gmail.com</email>
     <jid>roman.shterenzon@gmail.com</jid>
   </author>
+  <revision>
+    <version>0.0.2</version>
+    <date>2026-07-29</date>
+    <initials>RS</initials>
+    <remark><p>Defined interactive-input replay identity, canonicalization, retention, authorization order, and response semantics; clarified advisory cancellation and terminal immutability; and synchronized avatar and HTTPS manifest metadata.</p></remark>
+  </revision>
   <revision>
     <version>0.0.1</version>
     <date>2026-07-28</date>
@@ -599,8 +609,10 @@
       <tr><td><tt>mcpProtocolVersion</tt></td><td>OPTIONAL</td><td>MCP protocol revision used by an MCP bridge.</td></tr>
       <tr><td><tt>agent.vendor</tt></td><td>OPTIONAL</td><td>Provider or implementer name.</td></tr>
       <tr><td><tt>agent.homepage</tt></td><td>OPTIONAL</td><td>Informational HTTPS URI. Gateways and clients MUST NOT dereference it as part of registration, discovery, or other automatic protocol processing.</td></tr>
+      <tr><td><tt>agent.avatarUrl</tt></td><td>OPTIONAL</td><td>Public HTTPS avatar URI suitable for an &xep0054; <tt>PHOTO/EXTVAL</tt> response. A client MUST apply its public-profile and remote-resource policy before dereferencing it.</td></tr>
       <tr><td><tt>tools</tt></td><td>REQUIRED</td><td>Array of zero or more tool definitions.</td></tr>
     </table>
+    <p>The <tt>agent.homepage</tt> and <tt>agent.avatarUrl</tt> values MUST be absolute URIs under <link url='https://www.rfc-editor.org/rfc/rfc3986'>RFC 3986</link> whose scheme is <tt>https</tt>. Producers MUST serialize that scheme in lowercase. The authority MUST contain a non-empty host, userinfo MUST NOT be present, and the HTTP URI components MUST satisfy <link url='https://www.rfc-editor.org/rfc/rfc9110'>RFC 9110</link>. A gateway MUST enforce these application rules during manifest validation independently of the annotation-only JSON Schema <tt>format</tt> keyword.</p>
     <p>Each tool MUST contain <tt>name</tt> and <tt>inputSchema</tt>. It MAY contain <tt>title</tt>, <tt>description</tt>, <tt>outputSchema</tt>, MCP <tt>annotations</tt>, MCP <tt>execution</tt>, MCP <tt>_meta</tt>, and an XMPP extension object named <tt>urn:xmpp:agent-api:0</tt>. The MCP members retain their MCP-defined semantics exactly. XMPP-specific progress, cancellation, timeout, authorization, and tag declarations belong only in the namespaced extension object. Tool names MUST satisfy the grammar in <link url='#namespaces'>Protocol Namespaces and Identifiers</link> and MUST be unique within one manifest.</p>
     <p>The endpoint and tool service-discovery features are authoritative for XMPP capability negotiation. Tool-specific declarations apply only after that tool has been selected and MUST NOT override an endpoint capability advertised as unsupported.</p>
     <p>Execution and authorization hints are declarations, not grants. A gateway MUST derive effective authorization from trusted policy and MUST fail closed when a declared permission or approval requirement cannot be enforced.</p>
@@ -674,7 +686,8 @@
           "pattern":"^[A-Za-z0-9._~-]{1,64}$"
         },
         "vendor": {"type":"string","maxLength":256},
-        "homepage": {"type":"string","format":"uri","maxLength":2048}
+        "homepage": {"type":"string","format":"uri","pattern":"^https://","maxLength":2048},
+        "avatarUrl": {"type":"string","format":"uri","pattern":"^https://","maxLength":2048}
       },
       "additionalProperties": false
     },
@@ -840,6 +853,7 @@
 <section1 topic='JSON Payload Encoding' anchor='json-encoding'>
   <p>Every JSON-bearing element in this specification contains exactly one logical JSON text. Its XML character content, after normal XML entity decoding and concatenation of adjacent character-data nodes, MUST parse as one JSON value with no trailing non-whitespace data. Producers SHOULD emit one character-data node and MUST NOT depend on CDATA boundaries. Unless explicitly stated otherwise, the media type is <tt>application/json</tt>. Where the XML Schema requires a 'media-type' attribute, producers MUST include it even when <tt>application/json</tt> is the only permitted value.</p>
   <p>JSON text MUST be encoded as UTF-8 and MUST also be legal XML character data. Producers MUST escape XML markup characters as XML requires, MUST encode JSON control characters with JSON escapes, and MUST reject lone Unicode surrogate code points and characters forbidden by the negotiated XML version. Consumers MUST preserve whitespace inside JSON strings but MAY ignore insignificant JSON whitespace outside strings.</p>
+  <p>Invocation arguments and interactive input values MUST satisfy the I-JSON prerequisites of RFC 8785: object member names are unique, Unicode contains no lone surrogates, and numbers are representable as IEEE-754 double precision. For replay comparison, the target MUST canonicalize the parsed JSON value according to RFC 8785 and compare the resulting canonical UTF-8 bytes; the received XML character data need not already be canonical. A value that fails these prerequisites or cannot be canonicalized MUST be rejected with a &lt;not-acceptable/&gt; error before task admission or input acceptance.</p>
   <p>Gateways MUST impose documented limits on JSON byte length, nesting depth, string length, array and object member count, and parsing time. External JSON Schema references MUST NOT be resolved unless an explicit allowlist and resource budget permit them.</p>
 </section1>
 
@@ -1191,12 +1205,13 @@
     <p>The <tt>result</tt> member is the complete tool result envelope. An MCP bridge preserves <tt>CallToolResult.content</tt>, <tt>structuredContent</tt>, <tt>isError</tt>, and <tt>_meta</tt> as a whole. An MCP result with <tt>isError=true</tt> is still a successfully completed tool call and MUST NOT be converted into infrastructure state <tt>failed</tt>. When the selected tool declares an <tt>outputSchema</tt>, the target MUST validate <tt>structuredContent</tt> before completion, and the caller SHOULD validate it again.</p>
   </section2>
   <section2 topic='Interactive Input' anchor='interactive-input'>
-    <p>When a target cannot continue without caller input, it commits state <tt>input_required</tt> and sends a notification with a task-unique request ID, a human-readable question, a JSON Schema, creation time, and optional expiry time. At most one input request may be pending per task. Only an authorized resource of the authenticated caller bare JID may answer with an IQ of type "set" containing a &lt;provide-input/&gt; element. The target authoritatively validates the input and expected revision before returning an &lt;input-accepted/&gt; element. Unknown request IDs receive an &lt;item-not-found/&gt; error; schema-invalid input receives a &lt;not-acceptable/&gt; error; stale, expired, already answered, or conflicting input receives a &lt;conflict/&gt; error. Repeating an identical accepted IQ is idempotent.</p>
+    <p>When a target cannot continue without caller input, it commits state <tt>input_required</tt> and sends a notification with a task-unique request ID, a human-readable question, a JSON Schema, creation time, and optional expiry time. At most one input request may be pending per task. Only an authorized resource of the authenticated caller bare JID may answer with an IQ of type "set" containing a &lt;provide-input/&gt; element. The target authoritatively validates the input and expected revision before returning an &lt;input-accepted/&gt; element. Unknown or unauthorized request IDs receive an &lt;item-not-found/&gt; error; schema-invalid input receives a &lt;not-acceptable/&gt; error; except for an identical accepted-input replay as defined below, stale, expired, already answered, or conflicting input receives a &lt;conflict/&gt; error.</p>
+    <p>After authorizing the caller for the task, the target identifies an accepted input by the ordered tuple of authenticated caller bare JID, target bare JID, task ID, input request ID, expected revision, media type, and RFC 8785 canonical input bytes. The outer IQ stanza ID is not part of replay identity; the IQ result still mirrors the current request's 'id' attribute as required by XMPP Core. The target MUST retain the acceptance through the longer of the task lifetime and the promised result-retention period. Repeating the identical tuple MUST return an &lt;input-accepted/&gt; element containing the original task ID and acceptance revision and MUST NOT apply or dispatch the input twice, including after later task transitions. The target MUST recognize such a replay before applying stale-revision or already-answered checks. Within the authorized caller, target, task, and input-request scope, reuse with a different tuple MUST fail with a &lt;conflict/&gt; error.</p>
     <p>Every state response while input is pending MUST include the complete pending request, including its expiry if any, so loss of the notification is recoverable. On input expiry the target MUST atomically issue a new input request or settle the task. Cancellation may transition pending input to <tt>cancelling</tt>. Terminal settlement wins any race with input, and input received after terminal settlement MUST fail with a &lt;conflict/&gt; error.</p>
     <p>Interactive input is data entry, not a standardized authorization grant. Human approval in version 0 can be satisfied only through trusted local or out-of-band policy. A target that cannot verify a required approval MUST fail closed. Secrets SHOULD be provided through a credential mechanism rather than copied into task payloads.</p>
   </section2>
   <section2 topic='Cancellation and Deadlines' anchor='cancellation'>
-    <p>Only an authorized resource of the authenticated caller bare JID may request cancellation using an IQ of type "set". A cancellation request is accepted exactly once, moves a non-terminal task to <tt>cancelling</tt>, and remains advisory until the target settles it as <tt>cancelled</tt>, <tt>completed</tt>, or <tt>failed</tt>. The target alone chooses and commits the terminal state. If settlement committed first, cancellation fails with a &lt;conflict/&gt; error; if cancellation committed first, later tool output cannot overwrite the terminal result.</p>
+    <p>Only an authorized resource of the authenticated caller bare JID may request cancellation using an IQ of type "set". A cancellation request is accepted exactly once, moves a non-terminal task to <tt>cancelling</tt>, and remains advisory until the target settles it as <tt>cancelled</tt>, <tt>completed</tt>, or <tt>failed</tt>. The target alone chooses and commits the terminal state. If terminal settlement committed first, cancellation fails with a &lt;conflict/&gt; error. State <tt>cancelling</tt> is non-terminal and does not prevent a later atomic settlement as <tt>completed</tt> or <tt>failed</tt>. Once any terminal settlement commits, it is immutable. In particular, tool output arriving after <tt>cancelled</tt> MUST NOT alter the task state or result.</p>
     <p>Deadlines MUST conform to &xep0082;. If the target's accepted deadline expires while its task is non-terminal, the target MUST settle the task as <tt>failed</tt> with code <tt>deadline-expired</tt>. A caller-side wait timeout is only a local observation and MUST NOT create or assert a remote terminal state. Timeout does not prove that side effects did not occur; the caller MUST recover state or retry the identical request ID before considering a new side-effecting invocation.</p>
   </section2>
   <section2 topic='Task States' anchor='task-states'>
@@ -1320,8 +1335,8 @@
     <tr><td>&lt;bad-request/&gt;</td><td>Malformed JSON, missing attributes, invalid tool name, or invalid endpoint identifier.</td></tr>
     <tr><td>&lt;forbidden/&gt;</td><td>Registration for another JID or a denied operation where existence disclosure is acceptable.</td></tr>
     <tr><td>&lt;item-not-found/&gt;</td><td>Unknown, hidden, expired, or unauthorized endpoint, tool, version, schema, task, or input request.</td></tr>
-    <tr><td>&lt;not-acceptable/&gt;</td><td>Unsupported manifest version, schema mismatch, failed JSON Schema validation, or expired deadline.</td></tr>
-    <tr><td>&lt;conflict/&gt;</td><td>Conflicting registration or conflicting terminal task event.</td></tr>
+    <tr><td>&lt;not-acceptable/&gt;</td><td>Unsupported manifest version, schema mismatch, failed JSON Schema or I-JSON validation, or expired deadline.</td></tr>
+    <tr><td>&lt;conflict/&gt;</td><td>Conflicting registration, authorized replay fingerprint mismatch, stale or already answered input, or conflicting terminal task event.</td></tr>
     <tr><td>&lt;resource-constraint/&gt;</td><td>Manifest or schema too large, too many pending IQs, task capacity exhausted, or rate limit reached.</td></tr>
     <tr><td>&lt;service-unavailable/&gt;</td><td>The addressed protocol, endpoint runtime, or optional feature is unavailable.</td></tr>
   </table>
