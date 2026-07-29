@@ -56,6 +56,12 @@
     <jid>roman.shterenzon@gmail.com</jid>
   </author>
   <revision>
+    <version>0.0.4</version>
+    <date>2026-07-29</date>
+    <initials>RS</initials>
+    <remark><p>Scoped resource-limit stanza errors to IQ requests, defined receiver behavior for oversized IQ results and lifecycle messages, and prohibited rejected-content reflection.</p></remark>
+  </revision>
+  <revision>
     <version>0.0.3</version>
     <date>2026-07-29</date>
     <initials>RS</initials>
@@ -860,7 +866,7 @@
   <p>Every JSON-bearing element in this specification contains exactly one logical JSON text. Its XML character content, after normal XML entity decoding and concatenation of adjacent character-data nodes, MUST parse as one JSON value with no trailing non-whitespace data. Producers SHOULD emit one character-data node and MUST NOT depend on CDATA boundaries. Unless explicitly stated otherwise, the media type is <tt>application/json</tt>. Where the XML Schema requires a 'media-type' attribute, producers MUST include it even when <tt>application/json</tt> is the only permitted value.</p>
   <p>JSON text MUST be encoded as UTF-8 and MUST also be legal XML character data. Producers MUST escape XML markup characters as XML requires, MUST encode JSON control characters with JSON escapes, and MUST reject lone Unicode surrogate code points and characters forbidden by the negotiated XML version. Consumers MUST preserve whitespace inside JSON strings but MAY ignore insignificant JSON whitespace outside strings.</p>
   <p>Invocation arguments and interactive input values MUST satisfy the I-JSON prerequisites of RFC 8785: object member names are unique, Unicode contains no lone surrogates, and numbers are representable as IEEE-754 double precision. For replay comparison, the target MUST canonicalize the parsed JSON value according to RFC 8785 and compare the resulting canonical UTF-8 bytes; the received XML character data need not already be canonical. A value that fails these prerequisites or cannot be canonicalized MUST be rejected with a &lt;not-acceptable/&gt; error before task admission or input acceptance.</p>
-  <p>Gateways MUST impose documented limits on JSON byte length, nesting depth, string length, array and object member count, and parsing time. External JSON Schema references MUST NOT be resolved unless an explicit allowlist and resource budget permit them.</p>
+  <p>Gateways MUST impose documented limits on JSON byte length, nesting depth, string length, array and object member count, and parsing time. External JSON Schema references MUST NOT be resolved unless an explicit allowlist and resource budget permit them. When a gateway rejects JSON or a JSON Schema while processing an IQ request of type "get" or "set" because a documented size, complexity, pending-work, or validation-time limit is exceeded, it MUST apply the authorization rules for that operation before returning an IQ error containing &lt;resource-constraint/&gt;. Any diagnostic MUST be bounded and safe, and the response MUST NOT reflect the rejected JSON or schema. An entity that cannot accept JSON or a schema delivered in an IQ result MUST fail the local operation and MUST NOT send an IQ response. A caller that rejects a lifecycle message for such a limit MUST handle it as an invalid lifecycle message according to <link url='#events'>Lifecycle Events</link>.</p>
 </section1>
 
 <section1 topic='Lifecycle JSON Schemas' anchor='event-json-schemas'>
@@ -1349,7 +1355,7 @@
     <tr><td>&lt;item-not-found/&gt;</td><td>An endpoint, tool, version, schema, task, or input request that is nonexistent, expired, hidden from the requested discovery or metadata operation, or unauthorized for the requested operation.</td></tr>
     <tr><td>&lt;not-acceptable/&gt;</td><td>Unsupported manifest version, schema mismatch, failed JSON Schema or I-JSON validation, or expired deadline.</td></tr>
     <tr><td>&lt;conflict/&gt;</td><td>Conflicting registration, authorized invocation, input, or cancellation fingerprint mismatch, stale or already answered input, or conflicting terminal task event.</td></tr>
-    <tr><td>&lt;resource-constraint/&gt;</td><td>Manifest or schema too large, too many pending IQs, task capacity exhausted, or rate limit reached.</td></tr>
+    <tr><td>&lt;resource-constraint/&gt;</td><td>While processing an authorized IQ request of type "get" or "set", a documented JSON or schema size, complexity, pending-work, or validation-time limit is exceeded; too many IQs are pending; task capacity is exhausted; or a rate limit is reached. Any diagnostic is bounded and safe, and rejected JSON or schema is not reflected. IQ results and lifecycle messages follow their separate receiver rules.</td></tr>
     <tr><td>&lt;service-unavailable/&gt;</td><td>The addressed protocol, endpoint runtime, or optional feature is unavailable.</td></tr>
   </table>
   <p>To avoid cross-principal enumeration, a gateway MUST return an &lt;item-not-found/&gt; error for an object that is nonexistent or unauthorized for the requested operation, using the same safe error payload. For discovery and metadata operations, an object not visible to the requester is unauthorized for that operation. For invocation, lack of invocation permission is unauthorized, but lack of visibility alone MUST NOT deny an otherwise authorized request. Task input, cancellation, state, and result operations MUST apply their task-specific caller authorization and MUST NOT be denied solely because endpoint visibility later changes.</p>
