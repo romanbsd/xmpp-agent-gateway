@@ -24,10 +24,20 @@ approved by the XMPP Standards Foundation.
 
 - `protoxep-xmpp-agent-gateway.xml` — authoritative ProtoXEP source.
 - `protoxep-xmpp-agent-gateway.html` — generated review copy.
+- `docs/xmpp-client-guide.md` — client implementation guide for discovering
+  agents and invoking remote tools.
 - `validate.py` — embedded example, schema, and artifact-hash validator.
 - `xep.dtd`, `xep.ent`, and `xep.xsl` — XSF document tooling.
 - `xmpp.css`, `prettify.css`, and `prettify.js` — generated-document assets.
 - `Makefile` — validation and HTML/PDF rendering commands.
+
+## Client implementation guide
+
+See
+[Discovering and Invoking Remote Agent Tools over XMPP](docs/xmpp-client-guide.md)
+for the end-to-end client flow, including feature discovery, immutable
+manifest and schema selection, invocation, lifecycle events, retries, and task
+recovery.
 
 ## Requirements
 
