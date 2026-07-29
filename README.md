@@ -39,6 +39,28 @@ for the end-to-end client flow, including feature discovery, immutable
 manifest and schema selection, invocation, lifecycle events, retries, and task
 recovery.
 
+## Presentation
+
+[Give Every Agent an Address](presentations/xmpp-agent-gateway-protoxep.md) is
+a 19-slide Marp presentation that introduces the proposal through real-world
+problems and scenarios. It includes pre-rendered Mermaid sequence diagrams for
+discovery, delegation, recovery, and interactive input.
+
+Generated versions are available as
+[PDF](presentations/dist/xmpp-agent-gateway-protoxep.pdf),
+[PowerPoint](presentations/dist/xmpp-agent-gateway-protoxep.pptx), and
+[HTML](presentations/dist/xmpp-agent-gateway-protoxep.html).
+
+Rebuild the Mermaid diagrams and all presentation formats with:
+
+```sh
+make presentation
+```
+
+The build requires Node.js and Chrome, Chromium, or Edge. It uses pinned
+versions of the Mermaid and Marp CLIs through `npx`. Set `CHROME` or
+`BROWSER_PATH` if the browser executable cannot be detected automatically.
+
 ## Requirements
 
 Install Python 3, `libxml2`, and `libxslt`. The latter two provide `xmllint`

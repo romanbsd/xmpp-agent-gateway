@@ -1,0 +1,45 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "background": "transparent",
+    "primaryColor": "#f4f1ea",
+    "primaryTextColor": "#132033",
+    "primaryBorderColor": "#007f9f",
+    "lineColor": "#007f9f",
+    "secondaryColor": "#e6edf0",
+    "tertiaryColor": "#e6edf0",
+    "actorBkg": "#f4f1ea",
+    "actorBorder": "#007f9f",
+    "actorTextColor": "#132033",
+    "signalColor": "#596477",
+    "signalTextColor": "#132033",
+    "labelBoxBkgColor": "#e6edf0",
+    "labelBoxBorderColor": "#007f9f",
+    "labelTextColor": "#132033",
+    "loopTextColor": "#132033",
+    "activationBkgColor": "#d7edf3",
+    "activationBorderColor": "#007f9f",
+    "fontFamily": "Inter, Arial, sans-serif",
+    "fontSize": "20px"
+  },
+  "sequence": {
+    "useMaxWidth": true,
+    "diagramMarginX": 30,
+    "diagramMarginY": 10,
+    "actorMargin": 150,
+    "messageMargin": 34
+  }
+}}%%
+sequenceDiagram
+    participant App as User app
+    participant Agent as Agent endpoint
+
+    App->>Agent: Start long-running task
+    Agent-->>App: Accepted with task ID
+    Agent--xApp: Progress update is missed
+    App->>Agent: Recover authoritative state
+    Agent-->>App: Input required
+    App->>Agent: Provide structured answer
+    Agent-->>App: Completed
+    App->>Agent: Fetch retained result
+    Agent-->>App: Same immutable result

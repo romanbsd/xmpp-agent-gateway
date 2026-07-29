@@ -1,0 +1,47 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "background": "transparent",
+    "primaryColor": "#0b1a2d",
+    "primaryTextColor": "#f5f8ff",
+    "primaryBorderColor": "#4ddcff",
+    "lineColor": "#4ddcff",
+    "secondaryColor": "#12283f",
+    "tertiaryColor": "#12283f",
+    "actorBkg": "#0b1a2d",
+    "actorBorder": "#4ddcff",
+    "actorTextColor": "#f5f8ff",
+    "signalColor": "#a9b8ce",
+    "signalTextColor": "#f5f8ff",
+    "labelBoxBkgColor": "#0b1a2d",
+    "labelBoxBorderColor": "#4ddcff",
+    "labelTextColor": "#f5f8ff",
+    "loopTextColor": "#f5f8ff",
+    "activationBkgColor": "#123550",
+    "activationBorderColor": "#4ddcff",
+    "fontFamily": "Inter, Arial, sans-serif",
+    "fontSize": "20px"
+  },
+  "sequence": {
+    "useMaxWidth": true,
+    "diagramMarginX": 20,
+    "diagramMarginY": 10,
+    "actorMargin": 80,
+    "messageMargin": 34
+  }
+}}%%
+sequenceDiagram
+    participant App as User app
+    participant Server as XMPP network
+    participant Gateway as Agent gateway
+    participant Agent as Agent endpoint
+
+    App->>Server: Discover services
+    Server-->>App: Candidate gateway
+    App->>Gateway: Show agents visible to me
+    Gateway-->>App: Addressable agent directory
+    App->>Agent: What can you do?
+    Agent-->>App: Versioned capabilities
+    App->>Agent: Delegate a pinned task
+    Agent-->>App: Accepted with durable task ID
+    Agent-->>App: Progress and final result

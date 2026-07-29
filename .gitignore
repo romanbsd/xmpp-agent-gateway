@@ -1,2 +1,5 @@
 .serena
 __pycache__
+.DS_Store
+presentations/.serena
+presentations/dist/slides/
