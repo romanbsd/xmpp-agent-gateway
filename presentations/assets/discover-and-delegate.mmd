@@ -33,15 +33,14 @@
 sequenceDiagram
     participant App as User app
     participant Server as XMPP network
-    participant Gateway as Agent gateway
-    participant Agent as Agent endpoint
+    participant Travel as Travel agent
+    participant Specialist as Specialist agent
 
     App->>Server: Discover services
-    Server-->>App: Candidate gateway
-    App->>Gateway: Show agents visible to me
-    Gateway-->>App: Addressable agent directory
-    App->>Agent: What can you do?
-    Agent-->>App: Versioned capabilities
-    App->>Agent: Delegate a pinned task
-    Agent-->>App: Accepted with durable task ID
-    Agent-->>App: Progress and final result
+    Server-->>App: Addressable agent directory
+    App->>Travel: Plan my disrupted trip
+    Travel->>Specialist: Ask: what does policy allow?
+    Specialist-->>Travel: Answer with constraints
+    Travel->>Specialist: Delegate pinned rebooking task
+    Specialist-->>Travel: Accepted with durable task ID
+    Travel-->>App: Progress and final itinerary

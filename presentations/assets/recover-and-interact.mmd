@@ -32,14 +32,14 @@
 }}%%
 sequenceDiagram
     participant App as User app
-    participant Agent as Agent endpoint
+    participant Agent as Travel agent
 
-    App->>Agent: Start long-running task
+    App->>Agent: Rebook my disrupted trip
     Agent-->>App: Accepted with task ID
-    Agent--xApp: Progress update is missed
+    Agent--xApp: Rail option found (missed update)
     App->>Agent: Recover authoritative state
-    Agent-->>App: Input required
-    App->>Agent: Provide structured answer
+    Agent-->>App: Approve €40 fare difference?
+    App->>Agent: Yes, approve up to €50
     Agent-->>App: Completed
     App->>Agent: Fetch retained result
-    Agent-->>App: Same immutable result
+    Agent-->>App: Confirmed itinerary

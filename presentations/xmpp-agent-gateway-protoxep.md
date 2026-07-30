@@ -257,6 +257,23 @@ style: |
     z-index: 1;
   }
 
+  .image-left .lead,
+  .image-bottom .lead {
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.32;
+    text-shadow: 0 3px 18px rgba(0,0,0,.95);
+  }
+
+  .image-left .bottom,
+  .image-bottom .lead {
+    background: rgba(4,12,24,.60);
+    border-radius: 14px;
+    padding: 18px 22px;
+    backdrop-filter: blur(4px);
+  }
+
   .image-bottom {
     background-position: center;
     background-size: cover;
@@ -278,10 +295,6 @@ style: |
   .image-bottom h2,
   .image-bottom .lead {
     text-shadow: 0 2px 14px rgba(0,0,0,.72);
-  }
-
-  .image-bottom .lead {
-    color: #eef6ff;
   }
 
   .address {
@@ -375,7 +388,7 @@ style: |
 ## Powerful agents.<br>Stranded in silos.
 
 <div class="bottom" style="width: 530px">
-  <p class="lead">They have tools—but no shared way to be found, addressed, trusted, or followed through a long-running job.</p>
+  <p class="lead">They have tools—but no shared way to find and trust one another, delegate work, ask follow-up questions, or track a long-running job.</p>
 </div>
 
 <!--
@@ -411,8 +424,8 @@ style: |
 
 ## One disrupted trip.<br>Five systems.<br>One calm traveler.
 
-<div class="bottom" style="width: 520px">
-  <p class="lead">A travel agent can coordinate employer policy, airline, rail, hotel, and calendar—without the user becoming the integration layer.</p>
+<div class="bottom" style="width: 600px;bottom:42px">
+  <p class="lead" style="color:#fff;background-color:rgba(4,12,24,.82);padding:14px 20px;border-radius:14px;font-size:28px;font-weight:600">The travel agent asks policy what is allowed, delegates airline and rail rebooking, then confirms the calendar update.</p>
 </div>
 
 <!--
@@ -430,7 +443,7 @@ style: |
 
 ## A storm crosses company boundaries.<br>The response should too.
 
-<p class="lead">Forecast, utility, logistics, field-service, and notification agents coordinate while people make the consequential calls.</p>
+<p class="lead" style="color:#fff;background-color:rgba(4,12,24,.82);padding:18px 22px;border-radius:14px;font-size:32px;font-weight:600;max-width:1040px">The forecast agent asks where outages are likely. Logistics delegates crew routing to field service; notification waits for human approval before alerting residents.</p>
 
 <!--
 [Sources]
@@ -444,7 +457,7 @@ style: |
 
 <div class="eyebrow">The proposal</div>
 
-<div class="statement">Use XMPP as the <span class="cyan">connective tissue</span> for addressable AI agents and their tools.</div>
+<div class="statement">Use XMPP as the <span class="cyan">agent connection protocol</span> for addressable AI agents and their tools.</div>
 
 <div class="line"></div>
 
@@ -487,11 +500,11 @@ style: |
 ## “Please do this” becomes a durable task
 
 <div class="five" style="margin-top: 88px">
-  <div class="step"><div class="number">1</div><h3>Request</h3><p>Pin what you asked for.</p></div>
-  <div class="step"><div class="number">2</div><h3>Accept</h3><p>Know the work exists.</p></div>
-  <div class="step"><div class="number">3</div><h3>Progress</h3><p>Follow useful updates.</p></div>
-  <div class="step"><div class="number">4</div><h3>Interact</h3><p>Answer when needed.</p></div>
-  <div class="step"><div class="number">5</div><h3>Recover</h3><p>Get the final truth later.</p></div>
+  <div class="step"><div class="number">1</div><h3>Request</h3><p>Rebook the disrupted trip.</p></div>
+  <div class="step"><div class="number">2</div><h3>Accept</h3><p>Return a durable task ID.</p></div>
+  <div class="step"><div class="number">3</div><h3>Progress</h3><p>Rail option found.</p></div>
+  <div class="step"><div class="number">4</div><h3>Interact</h3><p>Approve the €40 difference?</p></div>
+  <div class="step"><div class="number">5</div><h3>Recover</h3><p>Fetch the confirmed itinerary.</p></div>
 </div>
 
 ---
@@ -503,7 +516,7 @@ style: |
 
 ## The work outlives the connection
 
-<p class="lead">Switch devices. Cross a tunnel. Reconnect tomorrow. The task still has an identity, a state, and an authoritative result.</p>
+<p class="lead" style="color:#fff;background-color:rgba(4,12,24,.82);padding:18px 22px;border-radius:14px;font-size:32px;font-weight:600;max-width:1010px">The traveler crosses a tunnel mid-rebooking. On reconnect, the same task still has an identity, a state, and one authoritative itinerary.</p>
 
 <!--
 [Sources]
@@ -582,7 +595,7 @@ style: |
 </div>
 
 <div class="bottom">
-  <span class="pulse"></span><span class="muted">Hidden, denied, and nonexistent resources receive privacy-safe treatment.</span>
+  <span class="muted">Hidden, denied, and nonexistent resources receive privacy-safe treatment.</span>
 </div>
 
 ---
