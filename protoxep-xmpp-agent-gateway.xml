@@ -56,6 +56,12 @@
     <jid>roman.shterenzon@gmail.com</jid>
   </author>
   <revision>
+    <version>0.0.5</version>
+    <date>2026-07-30</date>
+    <initials>RS</initials>
+    <remark><p>Recorded live Openfire XEP-0114 and XEP-0191 blocking limitations, conditioned blocking conformance on authoritative enforcement, prohibited presence-based unblock inference, and updated requester-delivery implementation status.</p></remark>
+  </revision>
+  <revision>
     <version>0.0.4</version>
     <date>2026-07-29</date>
     <initials>RS</initials>
@@ -241,7 +247,8 @@
       <li>an authenticated component connection;</li>
       <li>routing for the virtual endpoint JIDs;</li>
       <li>an authorization policy for registration, directory visibility, and invocation;</li>
-      <li>persistent manifest and task state if tasks must survive restart; and</li>
+      <li>persistent manifest and task state if tasks must survive restart;</li>
+      <li>for a Human Messaging conformance claim, a verified blocking-enforcement path satisfying <link url='#security'>Security Considerations</link>; and</li>
       <li>bounded reconnect, keepalive, IQ correlation, and task timeout behavior.</li>
     </ul>
     <p>Remote component connections MUST use confidentiality and server authentication appropriate to the deployment. A plaintext component secret sent across an untrusted network is not acceptable. Operators SHOULD place the component on a local or mutually authenticated encrypted transport and SHOULD rotate component credentials.</p>
@@ -258,7 +265,7 @@
       <tr><td>Interactive Tasks</td><td>Task Execution plus the independently advertised progress, cancellation, and input features.</td></tr>
       <tr><td>Self Registration</td><td>Authenticated C2S endpoint registration of immutable versions for the sender's own bare JID.</td></tr>
       <tr><td>Administrative Provisioning</td><td>Trusted registration, activation, deactivation, inspection, and removal operations.</td></tr>
-      <tr><td>Human Messaging</td><td>The optional application profile in <link url='#messaging'>Human Messaging Profile</link>; it is not required by any discovery or task profile.</td></tr>
+      <tr><td>Human Messaging</td><td>The optional application profile in <link url='#messaging'>Human Messaging Profile</link>, including the blocking-conformance conditions in <link url='#security'>Security Considerations</link>; it is not required by any discovery or task profile.</td></tr>
     </table>
     <p>A gateway MUST NOT advertise a feature it does not implement for the addressed entity. Service-discovery feature vars are authoritative. Endpoint-wide and tool-specific support are both required: effective support is true only when the endpoint advertises the feature and the selected tool declares support in its pinned manifest.</p>
   </section2>
@@ -533,7 +540,7 @@
   </section2>
   <section2 topic='Identity and Presence' anchor='identity-presence'>
     <p>An endpoint MAY publish a profile with &xep0292;. For compatibility with deployed clients, it MAY also answer &xep0054; requests. Profile information disclosed publicly MUST be limited to data intended for all requesters.</p>
-    <p>A hosted virtual endpoint SHOULD respond to presence subscription requests and probes as specified by XMPP IM. A gateway acting for a virtual endpoint MAY approve a subscription with <tt>subscribed</tt> and then send available presence. Presence reflects communications availability; detailed tool state remains in endpoint information.</p>
+    <p>A hosted virtual endpoint SHOULD respond to presence subscription requests and probes as specified by XMPP IM. A gateway acting for a virtual endpoint MAY approve a subscription with <tt>subscribed</tt> and then send available presence. Presence reflects runtime communications availability only; presence subscription status or presence availability MUST NOT be treated as evidence that communication is unblocked. Detailed tool state remains in endpoint information.</p>
     <p>Runtime availability is volatile and MUST be communicated with presence, not a cacheable service-discovery form. A cold-startable endpoint MAY be unavailable in XMPP presence while still advertising the static capability <tt>cold_start_supported=1</tt>.</p>
   </section2>
 </section1>
@@ -1343,7 +1350,7 @@
     <li>standard XMPP presence subscription and probe behavior for virtual endpoint JIDs.</li>
   </ul>
   <p>A gateway MUST keep human conversations separate from task execution state and MUST keep task correlation separate from channel destinations. Application output cannot choose its transport path.</p>
-  <p>An application MAY persist an authenticated requester's reply route with a durable task and, after completion, deliver the target's response from the target endpoint JID. In such a flow the calling agent supplies an instruction, not text authored on the target's behalf; the target authors its own response; the runtime delivers that response without asking the caller to repeat it; and the caller receives only delivery status and can acknowledge naturally. This application behavior does not change the base task result route and MUST obey recipient consent, blocking, provenance, and deduplication policy.</p>
+  <p>An application MAY persist an authenticated requester's reply route with a durable task and, after completion, deliver the target's response from the target endpoint JID. In such a flow the calling agent supplies an instruction, not text authored on the target's behalf; the target authors its own response; the runtime delivers that response without asking the caller to repeat it; and the caller receives only delivery status and can acknowledge naturally. This application behavior does not change the base task result route and MUST obey recipient consent, provenance, and deduplication policy. A deployment claiming that such delivery complies with the blocking requirements of this specification MUST satisfy the authoritative-enforcement conditions in <link url='#security'>Security Considerations</link>.</p>
 </section1>
 
 <section1 topic='Error Handling' anchor='errors'>
@@ -1428,9 +1435,10 @@
   </section2>
   <section2 topic='Implementation Status and Known Differences' anchor='implementation-status'>
     <p>The implementation on which this draft is based has been integration-tested using two independently configured Openfire server instances connected by XMPP server-to-server federation, with the gateway hosted on one domain and reached from the other. The tests exercise deny-by-default federation and independently configured visibility and invocation grants. This is evidence from one gateway implementation in an Openfire-based multi-domain deployment, not a claim of interoperability between two independent implementations of this protocol.</p>
+    <p>In a separate live Openfire investigation, a human user's &xep0191; block did not filter a chat stanza originating from an &xep0114; virtual endpoint, and the server did not provide the external component with an authoritative indication of block-state changes. These findings describe the tested configuration and are not a general claim about every Openfire deployment. The current implementation therefore disables &xep0114; deployment by default and does not claim compliance with this specification's blocking requirements for that configuration.</p>
     <table caption='Implementation and protocol status'>
       <tr><th>Capability</th><th>NanoClaw implementation of the :0 protocol</th><th>Independent interoperability test</th></tr>
-      <tr><td>External-component hosting and endpoint discovery</td><td>Implemented</td><td>No</td></tr>
+      <tr><td>External-component hosting and endpoint discovery</td><td>Implemented; &xep0114; deployment is disabled by default</td><td>No</td></tr>
       <tr><td>Visibility-scoped directory and search with RSM</td><td>Implemented</td><td>No</td></tr>
       <tr><td>Immutable manifest retrieval and explicit activation</td><td>Implemented</td><td>No</td></tr>
       <tr><td>Version-pinned schemas and tools</td><td>Implemented</td><td>No</td></tr>
@@ -1439,12 +1447,12 @@
       <tr><td>Complete state and result recovery within the promised retention period</td><td>Implemented</td><td>No</td></tr>
       <tr><td>Required JSON Schema 2020-12 evaluation</td><td>Implemented with bounded execution</td><td>No</td></tr>
       <tr><td>Federated visibility and invocation policy</td><td>Deny by default; independently configurable allowlists</td><td>No</td></tr>
-      <tr><td>Human messaging and requester delivery</td><td>Implemented as a non-conformance application profile</td><td>No</td></tr>
+      <tr><td>Human messaging and requester delivery</td><td>Implemented as a non-conformance application profile with stable delivery IDs, &xep0461; provenance, and at-least-once delivery semantics</td><td>No</td></tr>
     </table>
     <p>The deployed runtime enforces the gateway/model boundary described above. Model-facing discovery returns opaque <tt>agent:</tt> handles rather than XMPP endpoint identifiers. Inbound agent tasks are formatted as transport-neutral tool, argument, and event data; wire JIDs, component domains, tenant and workspace routing, endpoint addresses, and stanza correlation remain host-owned. Action tasks run in task-scoped sessions and settle only through explicit task actions; provider final prose cannot escape through a human channel.</p>
     <p>The deployed application defines a local tool named <tt>conversation.respond</tt>. This is an application convention, not a well-known name or interoperable feature defined by this specification. It uses the durable task transport, while the runtime converts the target's non-empty prose into the application's declared structured result. Implementations using that name remain responsible for publishing and versioning their own schemas and result-size limits.</p>
     <p>The deployed caller API additionally supports a local <tt>delivery="requester"</tt> policy for that application tool. It resolves the active XMPP requester route from session state, persists it with the task, sends the completed response through the channel adapter with the target endpoint JID as sender identity, records delivery state, and returns that outcome to the calling agent. This policy has no representation or negotiation in the protocol defined by this document and is therefore not part of conformance.</p>
-    <p>The deployed direct-delivery path currently sends an ordinary chat message without a standardized indication that another agent initiated the interaction. It also has at-least-once semantics: a crash after network send but before committing the delivery marker can expose the same response to the human twice. A future interoperable delivery profile needs explicit provenance, recipient-consent and blocking behavior, and end-to-end acknowledgement or deduplication.</p>
+    <p>The deployed direct-delivery path assigns stable delivery IDs and attaches &xep0461; reply provenance when the initiating message is known. Delivery remains at-least-once: a crash after network send but before committing the delivery marker can expose the same response to the human twice. Stable IDs permit correlation but do not provide an end-to-end acknowledgement or deduplication profile. A future interoperable delivery profile still needs standardized recipient consent, authoritative block-aware enforcement, and end-to-end acknowledgement or deduplication.</p>
     <p>The version 0 implementation replaces the predecessor wire profile rather than operating as a dual stack. It uses the fixed <tt>'urn:xmpp:*:0'</tt> namespaces, immutable manifests with explicit activation, standard JSON media types, RFC 8785 canonicalization, &xep0300; hashes, version-pinned tool nodes and schemas, receiver-generated task IDs, revisioned lifecycle events, complete recovery IQs, and authorization derived from the authenticated XMPP sender and trusted local policy. Directory, search, and tool paging use &xep0059;. The normative blocks in this document are intended to be the source for committed manifest, event, and XML Schema artifacts. Implementations SHOULD normalize and compare generated artifacts byte-for-byte and check protocol namespace constants separately.</p>
     <p>The following work remains outside the implemented conformance surface:</p>
     <ul>
@@ -1494,7 +1502,9 @@
   <p>Version 0 defines no portable approval token. A future approval profile must cryptographically bind a grant to the caller, endpoint, tool, immutable manifest, exact canonical arguments or an explicitly bounded argument scope, expiry, nonce or request ID, and intended side effect. Interactive input alone is not such a grant.</p>
   <p>An LLM is not an XMPP security principal. Hiding transport identifiers from the model reduces accidental disclosure but does not replace authorization. The gateway MUST bind every model-facing opaque endpoint handle and task handle to server-side identity and tenant state, reject stale or cross-context handles, and construct all wire addresses itself. Model-generated destination markup or identity claims MUST be ignored for task delivery.</p>
   <p>A server or component MUST originate a stanza from a virtual target JID only when it is authorized to act for that endpoint. A caller gateway MUST NOT spoof a remote target JID; cross-domain sending from the target requires the target gateway or a future explicit delegation protocol.</p>
-  <p>An implementation that performs application-specific direct delivery of a task result to a human MUST establish recipient consent, either explicitly or through a documented closed-deployment policy, and MUST honor &xep0191; blocking and applicable presence or messaging policy. It SHOULD attach provenance with &xep0461; when the triggering message is known so a client can render the relationship to the initiating conversation. Without an end-to-end acknowledgement or deduplication profile, such human-visible delivery has at-least-once semantics: a crash after network send but before local commit can expose the same response twice.</p>
+  <p>An implementation that performs application-specific direct delivery of a task result to a human MUST establish recipient consent, either explicitly or through a documented closed-deployment policy. A Human Messaging implementation MUST honor &xep0191; blocking and applicable presence or messaging policy for every message it originates from a hosted virtual endpoint to a human, including ordinary direct chat and application-specific direct delivery. For a virtual sender reached through an external component, the deployment MUST NOT assume that server routing enforces &xep0191;. If the recipient's server does not enforce &xep0191; for stanzas from that virtual sender, another trusted enforcement point MAY satisfy the blocking requirement only if it obtains authoritative current block state for the exact virtual sender identity and prevents delivery while the block is in force.</p>
+  <p>This specification defines no mechanism by which an &xep0114; external component retrieves a recipient's blocklist or receives authoritative block and unblock change notifications. A deployment that cannot authoritatively determine or enforce current block state MUST NOT claim compliance with the blocking requirements of this specification. Presence subscription status, presence availability, successful stanza routing, and the absence of a stanza error MUST NOT be treated as authoritative evidence that communication is unblocked.</p>
+  <p>Direct delivery SHOULD attach provenance with &xep0461; when the triggering message is known so a client can render the relationship to the initiating conversation. Without an end-to-end acknowledgement or deduplication profile, such human-visible delivery has at-least-once semantics: a crash after network send but before local commit can expose the same response twice.</p>
   <p>Gateways are confused-deputy targets. The base protocol authorizes the immediate authenticated XMPP sender for the selected endpoint, exact tool, immutable manifest, canonical arguments, and intended side effect. It cannot prove an original principal across an agent chain. A local original-user identity, delegation ancestry, trusted agent name, or prior approval for another call MUST NOT confer remote authority without a future verifiable delegation or approval grant.</p>
   <p>Federated discovery, registration, and invocation MUST be denied by default unless an operator explicitly enables the remote domain or principal. Allowlists SHOULD be scoped separately for visibility and invocation. Display names and localparts are subject to name squatting and visual impersonation; clients SHOULD emphasize the normalized endpoint JID and security context.</p>
 </section1>
